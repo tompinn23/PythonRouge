@@ -1,4 +1,4 @@
-# Coursework # 
+# Coursework 
 
 This is the private repo for my coursework if you are here piss off.
 
