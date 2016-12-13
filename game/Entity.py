@@ -15,7 +15,7 @@ class Entity():
     def attack(self, attackPower, entity):
         entity.onAttack(attackPower)
 
-    def move(self, dy, dx):
+    def move(self, dx, dy):
         self.x += dx
         self.y += dy
         
