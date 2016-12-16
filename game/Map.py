@@ -8,7 +8,7 @@ class Map():
             game_map = [[Tile(True) for y in range(map_height)]
                         for x in range(map_width)]
         else:
-        	game_map = map_file
+            game_map = map_file
         self.game_map = game_map
 
 

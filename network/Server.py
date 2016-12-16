@@ -1,10 +1,12 @@
 import socketserver
 import threading
 import pickle
+import logging
 # Lock for making sure that only one thread access the players data at a time.
 playerLock = threading.Lock()
 # Dictionary containing player xy coords.
 players = {}
+entities = {}
 
 
 class GameServerProtocol(socketserver.BaseRequestHandler):
@@ -22,22 +24,23 @@ class GameServerProtocol(socketserver.BaseRequestHandler):
 
 
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
-	"""This class just exists to be a subclass of ^"""
-	pass
+    """This class just exists to be a subclass of
+    ThreadingMixIn and TCPServer"""
+    pass
 
 
-if __name__ == "__main__":
-    # Port 0 means to select an arbitrary unused port
+class Server():
+    def __init__(self, address, port):
+        self.address = address
+        self.port = port
+        server = ThreadedTCPServer((address, port), GameServerProtocol)
+        self.server = server
+        logging.info("Server Thread Starting")
+        server_thread = threading.Thread(target=server.serve_forever)
+        self.server_thread = server_thread
+        server_thread.start()
+        logging.info("Server Thread Started")
 
-    HOST, PORT = "localhost", 8080
-
-    server = ThreadedTCPServer((HOST, PORT), GameServerProtocol)
-    ip, port = server.server_address
-    print(ip, port)
-
-    # Start a thread with the server -- that thread will then start one
-    # more thread for each request
-    server_thread = threading.Thread(target=server.serve_forever)
-    # Exit the server thread when the main thread terminates
-    server_thread.start()
-    print("Server loop running in thread:", server_thread.name)
+    def closeServer(self):
+        self.server.shutdown()
+        logging.info(self.server_thread.isAlive)
