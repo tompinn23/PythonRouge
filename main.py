@@ -20,15 +20,28 @@ def handle_keys(entity):
             entity.move(0, 1)
         if key == terminal.TK_CLOSE:
             return True
+def handle_input():
+    key = terminal.read()
+    if key == terminal.TK_1:
+        return 1
+    if key == terminal.TK_2:
+        return 2
+    if key == terminal.TK_3:
+        return 4533
+    if key == terminal.TK_CLOSE:
+        return 4533
+    
 
-
-while True:
-    terminal.put(player.x, player.y, '@')
-    terminal.refresh()
-    terminal.put(player.x, player.y, ' ')
-    exit = handle_keys(player)
-    if exit:
-        break
+def mainMenu():
+    while True:
+        terminal.printf(4, 2, "[color=(11,110,117)] Game")
+        terminal.printf(4, 3, "1) Play Game")
+        terminal.printf(4, 4, "2) Join Game")
+        terminal.printf(4, 5, "3) Exit Game")
+        exit = handle_input():
+        if exit == 4533:
+            break
+            
 
 
 terminal.close()
