@@ -1,3 +1,6 @@
+import sys
+sys.path.append("../")
+from game import Map
 import socketserver
 import threading
 import pickle
@@ -40,6 +43,7 @@ class Server():
         self.server_thread = server_thread
         server_thread.start()
         logging.info("Server Thread Started")
+
 
     def closeServer(self):
         self.server.shutdown()
