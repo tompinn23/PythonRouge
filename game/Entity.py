@@ -3,6 +3,7 @@ sys.path.append("../")
 from bearlibterminal import terminal
 from . import constants
 
+
 class Entity():
     def __init__(self, x, y, dead, health, char, entityType):
         self.x = x
@@ -20,17 +21,13 @@ class Entity():
     def attack(self, attackPower, entity):
         entity.onAttack(attackPower)
 
-    def move(self, dx, dy):
-        self.x += dx
-        self.y += dy
-    
+    def move(self, dx, dy, _map):
+        if not _map[self.x + dx][self.y + dy].blocked:
+            self.x += dx
+            self.y += dy
+
     def draw(self):
         terminal.put(self.x, self.y, self.char)
+
     def clear(self):
         terminal.put(self.x, self.y, ' ')
-        
-        
-        
-        
-        
-        

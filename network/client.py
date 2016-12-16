@@ -28,7 +28,7 @@ class Client():
         if len(data) != 0:
             return data
         else:
-            return None 
+            return None
 
     def disconnnect(self):
         self.sock.close()

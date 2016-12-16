@@ -1,6 +1,8 @@
 # imports
 from bearlibterminal import terminal
 from game import Player
+from game import Map
+from game import Rect
 from network import Server
 from network import Client
 import logging
@@ -14,10 +16,9 @@ terminal.open()
 terminal.set("window: size=70x50; font: terminal12x12.png, size=12x12;")
 terminal.refresh()
 # Load a player entity for testing
-player = Player(2, 2, False, 100, "player", "TomP")
 
 
-def handle_keys(entity):
+def handle_keys(entity, _map):
     """Function for handling input for an entity specified in the arguments"""
     # First we check for input availiablity so terminal.read() is none
     # blocking.
@@ -26,15 +27,19 @@ def handle_keys(entity):
         # We check for what the key is and then do a specific action based on
         # that key.
         if key == terminal.TK_LEFT:
-            entity.move(-1, 0)
+            entity.move(-1, 0, _map)
+            return 1
         elif key == terminal.TK_RIGHT:
-            entity.move(1, 0)
+            entity.move(1, 0, _map)
+            return 1
         elif key == terminal.TK_UP:
-            entity.move(0, -1)
+            entity.move(0, -1, _map)
+            return 1
         elif key == terminal.TK_DOWN:
-            entity.move(0, 1)
+            entity.move(0, 1, _map)
+            return 1
         if key == terminal.TK_CLOSE:
-            return True
+            return 2
 
 
 def handle_input():
@@ -77,14 +82,22 @@ def mainMenu():
 
 
 def playGame():
-    p = Player(4 , 4, False, 100, '@', "Player", "Tom")
+    _map = Map(70, 50)
+    p = Player(4, 4, False, 100, '@', "Player", "Tom")
+    terminal.clear()
     while True:
+        _map.render_map()
+        _map.game_map[2][4].block_sight = True
+        terminal.layer(1)
         p.draw()
         terminal.refresh()
         p.clear()
-        ex = handle_keys()
-        if exit:
+        ex = handle_keys(p, _map.game_map)
+        if ex == 1:
+            _map.do_fov(p.x, p.y, 10)
+        if ex == 2:
             break
+
 
 def joinGame():
     pass

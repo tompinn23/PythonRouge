@@ -1,0 +1,4 @@
+bearlibterminal docs http://foo.wyrd.name/en:bearlibterminal:reference
+python + tdl tutorial http://www.roguebasin.com/index.php?title=Roguelike_Tutorial,_using_python3%2Btdl
+fov http://www.roguebasin.com/index.php?title=Raycasting_in_python
+new_fov http://www.roguebasin.com/index.php?title=Python_shadowcasting_implementation
