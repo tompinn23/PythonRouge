@@ -3,6 +3,7 @@ from bearlibterminal import terminal
 from game import Player
 from game import Map
 from game import Rect
+from game import constants
 from network import Server
 from network import Client
 import logging
@@ -84,17 +85,19 @@ def mainMenu():
 def playGame():
     _map = Map(70, 50)
     p = Player(4, 4, False, 100, '@', "Player", "Tom")
+    _map.create_room(Rect(4,4,10,10))
     terminal.clear()
+    _map.do_fov(p.x,p.y, constants.FOV_RADIUS)
     while True:
         _map.render_map()
-        _map.game_map[2][4].block_sight = True
+        _map.draw_player_background(p.x, p.y)
         terminal.layer(1)
         p.draw()
         terminal.refresh()
         p.clear()
         ex = handle_keys(p, _map.game_map)
         if ex == 1:
-            _map.do_fov(p.x, p.y, 10)
+            _map.do_fov(p.x, p.y, constants.FOV_RADIUS)
         if ex == 2:
             break
 
