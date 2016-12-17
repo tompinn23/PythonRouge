@@ -1,9 +1,13 @@
 # imports
 from bearlibterminal import terminal
 from game import Player
+from game import Map
+from game import Rect
+from game import constants
 from network import Server
 from network import Client
-import logging, time
+import logging
+import time
 # Setup Logging to file specifing date and time added to message
 logging.basicConfig(filename='coursework.log',
                     format='%(asctime)s %(message)s',
@@ -13,10 +17,9 @@ terminal.open()
 terminal.set("window: size=70x50; font: terminal12x12.png, size=12x12;")
 terminal.refresh()
 # Load a player entity for testing
-player = Player(2, 2, False, 100, "player", "TomP")
 
 
-def handle_keys(entity):
+def handle_keys(entity, _map):
     """Function for handling input for an entity specified in the arguments"""
     # First we check for input availiablity so terminal.read() is none
     # blocking.
@@ -25,15 +28,19 @@ def handle_keys(entity):
         # We check for what the key is and then do a specific action based on
         # that key.
         if key == terminal.TK_LEFT:
-            entity.move(-1, 0)
+            entity.move(-1, 0, _map)
+            return 1
         elif key == terminal.TK_RIGHT:
-            entity.move(1, 0)
+            entity.move(1, 0, _map)
+            return 1
         elif key == terminal.TK_UP:
-            entity.move(0, -1)
+            entity.move(0, -1, _map)
+            return 1
         elif key == terminal.TK_DOWN:
-            entity.move(0, 1)
+            entity.move(0, 1, _map)
+            return 1
         if key == terminal.TK_CLOSE:
-            return True
+            return 2
 
 
 def handle_input():
@@ -76,10 +83,23 @@ def mainMenu():
 
 
 def playGame():
-    server = Server("localhost", 34562)
-    time.sleep(5)
-    server.closeServer()
-
+    _map = Map(70, 50)
+    p = Player(4, 4, False, 100, '@', "Player", "Tom")
+    _map.create_room(Rect(4,4,10,10))
+    terminal.clear()
+    _map.do_fov(p.x,p.y, constants.FOV_RADIUS)
+    while True:
+        _map.render_map()
+        _map.draw_player_background(p.x, p.y)
+        terminal.layer(1)
+        p.draw()
+        terminal.refresh()
+        p.clear()
+        ex = handle_keys(p, _map.game_map)
+        if ex == 1:
+            _map.do_fov(p.x, p.y, constants.FOV_RADIUS)
+        if ex == 2:
+            break
 
 
 def joinGame():
@@ -98,5 +118,5 @@ if ch == 3:
     pass
 
 logging.info("----CLOSED PROGRAM----")
-#Cleanly close the terminal window.
+# Cleanly close the terminal window.
 terminal.close()

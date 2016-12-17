@@ -1,9 +1,10 @@
 import sys
 import logging
-from game import fov
 sys.path.append("../")
 from bearlibterminal import terminal
-
+from game import Rect
+from random import randint
+import random
 
 floor = terminal.color_from_argb(100, 30, 40, 38)
 floor_lit = terminal.color_from_argb(100, 173, 173, 161)
@@ -19,6 +20,7 @@ _octants = ((1, 0, 0, 1),
             (1, 0, 0, -1))
 features = ["room", "h_tunnel", "v_tunnel"]
 compass = ["N", "E", "S", "W"]
+
 
 class Map():
     # A game map
@@ -59,12 +61,41 @@ class Map():
                 self.game_map[x][y].block_sight = False
 
     def create_h_tunnel(self, x1, x2, y):
-        for x in range(min(x1, x2), max(x1, x2) +1):
+        for x in range(min(x1, x2), max(x1, x2) + 1):
             self.game_map[x][y].blocked = False
             self.game_map[x][y].block_sight = False
 
     def create_v_tunnel(self, y1, y2, x):
+        for y in range(min(y1, y2), max(y1, y2) + 1):
+            self.game_map[x][y].blocked = False
+            self.game_map[x][y].block_sight = False
 
+    def generate_dungeon(self, max_rooms):
+        initial_room = Rect(self.map_width // 2, self.map_height //
+                            2, randint(0, 20), randint(0, 20))
+        self.create_room(initial_room)
+        rooms = 0
+        while rooms <= max_rooms:
+            direction = random.choice(compass)
+            feature = random.choice(features)
+            if direction == "N":
+                center_x, center_y = initial_room.center()
+                if feature == "room":
+                    new_room = Rect(room.x1, center_y,
+                                    randint(0, 20), randint(0, 20))
+                    if new_room.x1 < 0
+                    or new_room.x2 < 0
+                    or new_room.y1 < 0
+                    or new_room.y2 < 0
+                    or new_room.x1 >= self.map_width
+                    or new_room.x2 >= self.map_width
+                    or new_room.y1 >= self.map_height
+                    or new_room.y2 >= self.map_height:
+                        pass
+                    else:
+                        if not new_room.intersect(initial_room):
+                            self.create_room(new_room)
+                            rooms += 1
 
     def render_map(self):
         for y in range(self.map_height):
@@ -91,8 +122,8 @@ class Map():
         terminal.put(x, y, ' ')
 
     def blocked(self, x, y):
-        return (x < 0 or y < 0 or x >= self.map_width
-                or y >= self.map_height or self.game_map[x][y].blocked)
+        eturn(x < 0 or y < 0 or x >= self.map_width
+              or y >= self.map_height or self.game_map[x][y].blocked)
 
     def lit(self, x, y):
         return self.game_map[x][y].lit is True
@@ -154,13 +185,6 @@ class Map():
             self._cast_light(x, y, 1, 1.0, 0.0, radius,
                              self.mult[0][oct], self.mult[1][oct],
                              self.mult[2][oct], self.mult[3][oct], 0)
-
-    def doFov(self, x, y, radius):
-        for x in range(self.map_width):
-            for y in range(self.map_height):
-                self.game_map[x][y].lit = False
-        fov.fieldOfView(x, y, self.map_width, self.map_height,
-                        radius, self.visit, self.blocked)
 
 
 class Tile():
