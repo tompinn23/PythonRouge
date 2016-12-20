@@ -2,23 +2,15 @@ import sys
 import logging
 sys.path.append("../")
 from bearlibterminal import terminal
-from game import Rect
-from random import randint
+from game import features
+from game import generator
 import random
+
 
 floor = terminal.color_from_argb(100, 30, 40, 38)
 floor_lit = terminal.color_from_argb(100, 173, 173, 161)
-wall = terminal.color_from_argb(100, 38, 28, 61)
-wall_lit = terminal.color_from_argb(100, 52, 39, 84)
-_octants = ((1, 0, 0, 1),
-            (0, 1, 1, 0),
-            (0, -1, 1, 0),
-            (-1, 0, 0, 1),
-            (-1, 0, 0, -1),
-            (0, -1, -1, 0),
-            (0, 1, -1, 0),
-            (1, 0, 0, -1))
-features = ["room", "h_tunnel", "v_tunnel"]
+wall = terminal.color_from_argb(100, 97, 145, 49)
+wall_lit = terminal.color_from_argb(100, 136, 181, 91)
 compass = ["N", "E", "S", "W"]
 
 
@@ -60,42 +52,154 @@ class Map():
                 self.game_map[x][y].blocked = False
                 self.game_map[x][y].block_sight = False
 
-    def create_h_tunnel(self, x1, x2, y):
-        for x in range(min(x1, x2), max(x1, x2) + 1):
-            self.game_map[x][y].blocked = False
-            self.game_map[x][y].block_sight = False
+    def create_h_tunnel(self, room):
+        for x in range(min(room.x1, room.x2), max(room.x1, room.x2) + 1):
+            self.game_map[x][room.y1].blocked = False
+            self.game_map[x][room.y1].block_sight = False
 
-    def create_v_tunnel(self, y1, y2, x):
-        for y in range(min(y1, y2), max(y1, y2) + 1):
-            self.game_map[x][y].blocked = False
-            self.game_map[x][y].block_sight = False
+    def create_v_tunnel(self, room):
+        for y in range(min(room.y1, room.y2), max(room.y1, room.y2) + 1):
+            self.game_map[room.x1][y].blocked = False
+            self.game_map[room.x1][y].block_sight = False
 
-    def generate_dungeon(self, max_rooms):
-        initial_room = Rect(self.map_width // 2, self.map_height //
-                            2, randint(0, 20), randint(0, 20))
-        self.create_room(initial_room)
-        rooms = 0
-        while rooms <= max_rooms:
-            direction = random.choice(compass)
-            feature = random.choice(features)
-            if direction == "N":
-                center_x, center_y = initial_room.center()
-                if feature == "room":
-                    new_room = Rect(room.x1, center_y,
-                                    randint(0, 20), randint(0, 20))
-                    if new_room.x1 < 0
-                    or new_room.x2 < 0
-                    or new_room.y1 < 0
-                    or new_room.y2 < 0
-                    or new_room.x1 >= self.map_width
-                    or new_room.x2 >= self.map_width
-                    or new_room.y1 >= self.map_height
-                    or new_room.y2 >= self.map_height:
-                        pass
-                    else:
-                        if not new_room.intersect(initial_room):
-                            self.create_room(new_room)
-                            rooms += 1
+    def generate_dungeon(self, w ,h):
+        dungeon = generator.Generator(w, h)
+        dungeon.gen_level()
+        tiles = dungeon.gen_tiles_level()
+        y = 0
+        for row in tiles:
+            cur = list(row)
+            for x in range(len(cur)):
+                if cur[x] == '0' or cur[x] == '2':
+                    self.game_map[x][y].blocked = True
+                    self.game_map[x][y].block_sight = True
+                if cur[x] == '1':
+                    self.game_map[x][y].blocked = False
+                    self.game_map[x][y].block_sight = False
+            y += 1
+
+    def findPlayerLoc(self):
+        playerLoc = False
+        while not playerLoc:
+            for x in range(self.map_width):
+                for y in range(self.map_height):
+                    if self.game_map[x][y].blocked is False:
+                        return x, y
+                        playerLoc = True
+                        break
+
+
+
+
+
+    # def generate_dungeon(self, max_rooms):
+    #     width = self.map_width // 2
+    #     height = self.map_height // 2
+    #     initial_room = features.Room(width, height, [0, 20], [0, 20])
+    #     initial_feature = initial_room
+    #     self.create_room(initial_room)
+    #     rooms = 0
+    #     while rooms <= max_rooms:
+    #         direction = random.choice(compass)
+    #         if initial_feature.id == "room":
+    #             center_x, center_y = initial_feature.center()
+    #             if direction == "N":
+    #                 new_feature = features.V_tunnel(center_x, initial_feature.y1, [
+    #                                    initial_feature.y1 + 1, initial_feature.y1 + 10])
+    #                 try:
+    #                     self.create_v_tunnel(new_feature)
+    #                 except IndexError:
+    #                     pass
+    #             if direction == "E":
+    #                 new_feature = features.H_tunnel(initial_feature.x2, center_y, [
+    #                                    initial_feature.x2 + 1, initial_feature.x2 + 10])
+    #                 try:
+    #                     self.create_h_tunnel(new_feature)
+    #                 except IndexError:
+    #                     pass
+    #             if direction == "S":
+    #                 new_feature = features.V_tunnel(center_x, initial_feature.y2, [
+    #                                    initial_feature.y2 - 10, initial_feature.y2 - 1])
+    #                 try:
+    #                     self.create_v_tunnel(new_feature)
+    #                 except IndexError:
+    #                     pass
+    #             if direction == "W":
+    #                 new_feature = features.H_tunnel(initial_feature.x1, center_y, [
+    #                                    initial_feature.x1 - 10, initial_feature.x1 - 1])
+    #                 try:
+    #                     self.create_h_tunnel(new_feature)
+    #                 except IndexError:
+    #                     pass
+    #         if initial_feature.id == "v_tunnel" or initial_feature.id == "h_tunnel":
+    #             if direction == "N":
+    #                 new_feature = features.V_tunnel(center_x, initial_feature.y1, [
+    #                                    initial_feature.y1 + 1, initial_feature.y1 + 10])
+    #                 try:
+    #                     self.create_v_tunnel(new_feature)
+    #                 except IndexError:
+    #                     pass
+    #             if direction == "E":
+    #                 new_feature = features.H_tunnel(initial_feature.x2, center_y, [
+    #                                    initial_feature.x2 + 1, initial_feature.x2 + 10])
+    #                 try:
+    #                     self.create_h_tunnel(new_feature)
+    #                 except IndexError:
+    #                     pass
+    #             if direction == "S":
+    #                 new_feature = features.V_tunnel(center_x, initial_feature.y2, [
+    #                                    initial_feature.y2 - 10, initial_feature.y2 - 1])
+    #                 try:
+    #                     self.create_v_tunnel(new_feature)
+    #                 except IndexError:
+    #                     pass
+    #             if direction == "W":
+    #                 new_feature = features.H_tunnel(initial_feature.x1, center_y, [
+    #                                    initial_feature.x1 - 10, initial_feature.x1 - 1])
+    #                 try:
+    #                     self.create_h_tunnel(new_feature)
+    #                 except IndexError:
+    #                     pass
+    #             initial_feature = new_feature
+    #         if initial_feature.id == "h_tunnel" or initial_feature.id == "v_tunnel":
+    #             center_x, center_y = initial_feature.center()
+    #             if direction == "N":
+    #                 w = random.randint(0, 10)
+    #                 h = random.randint(0, 10)
+    #                 new_feature = features.Room(center_x - w//2 - h, center_y,
+    #                                    w, h)
+    #                 try:
+    #                     self.Room(new_feature)
+    #                 except IndexError:
+    #                     pass
+    #             if direction == "E":
+    #                 w = random.randint(0, 10)
+    #                 h = random.randint(0, 10)
+    #                 new_feature = features.Room(center_x - w//2 - h, center_y,
+    #                                    w, h)
+    #                 try:
+    #                     self.Room(new_feature)
+    #                 except IndexError:
+    #                     pass
+    #             if direction == "S":
+    #                 w = random.randint(0, 10)
+    #                 h = random.randint(0, 10)
+    #                 new_feature = features.Room(center_x - w//2 - h, center_y,
+    #                                    w, h)
+    #                 try:
+    #                     self.Room(new_feature)
+    #                 except IndexError:
+    #                     pass
+    #             if direction == "W":
+    #                 w = random.randint(0, 10)
+    #                 h = random.randint(0, 10)
+    #                 new_feature = features.Room(center_x - w//2 - h, center_y,
+    #                                    w, h)
+    #                 try:
+    #                     self.Room(new_feature)
+    #                 except IndexError:
+    #                     pass
+    #             rooms += 1
 
     def render_map(self):
         for y in range(self.map_height):
@@ -120,10 +224,6 @@ class Map():
         terminal.layer(0)
         terminal.bkcolor(floor_lit)
         terminal.put(x, y, ' ')
-
-    def blocked(self, x, y):
-        eturn(x < 0 or y < 0 or x >= self.map_width
-              or y >= self.map_height or self.game_map[x][y].blocked)
 
     def lit(self, x, y):
         return self.game_map[x][y].lit is True
@@ -174,6 +274,10 @@ class Map():
             # Row is scanned; do next row unless last square was blocked:
             if blocked:
                 break
+
+    def blocked(self, x, y):
+        return(x < 0 or y < 0 or x >= self.map_width
+               or y >= self.map_height or self.game_map[x][y].blocked)
 
     def do_fov(self, x, y, radius):
         "Calculate lit squares from the given location and radius"

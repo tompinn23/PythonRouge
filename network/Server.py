@@ -1,6 +1,8 @@
 import sys
 sys.path.append("../")
 from game import Map
+from game import Monster
+
 import socketserver
 import threading
 import pickle

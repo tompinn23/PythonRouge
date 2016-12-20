@@ -84,20 +84,21 @@ def mainMenu():
 
 def playGame():
     _map = Map(70, 50)
-    p = Player(4, 4, False, 100, '@', "Player", "Tom")
-    _map.create_room(Rect(4,4,10,10))
+    _map.generate_dungeon(70, 50)
+    playerx, playery = _map.findPlayerLoc()
+    player = Player(playerx, playery, False, 100,'@', "player", "Tom")
     terminal.clear()
-    _map.do_fov(p.x,p.y, constants.FOV_RADIUS)
+    _map.do_fov(player.x, player.y, constants.FOV_RADIUS)
     while True:
         _map.render_map()
-        _map.draw_player_background(p.x, p.y)
+        _map.draw_player_background(player.x, player.y)
         terminal.layer(1)
-        p.draw()
+        player.draw()
         terminal.refresh()
-        p.clear()
-        ex = handle_keys(p, _map.game_map)
+        player.clear()
+        ex = handle_keys(player, _map.game_map)
         if ex == 1:
-            _map.do_fov(p.x, p.y, constants.FOV_RADIUS)
+            _map.do_fov(player.x, player.y, constants.FOV_RADIUS)
         if ex == 2:
             break
 

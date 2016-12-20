@@ -1,10 +1,19 @@
-class Rect:
+import random
+class Rect():
     # a rectangle on the map. used to characterize a room.
     def __init__(self, x, y, w, h):
         self.x1 = x
         self.y1 = y
-        self.x2 = x + w
-        self.y2 = y + h
+        if isinstance(w, list):
+            wi = random.randint(w[0], w[1])
+            self.x2 = x + wi
+        else:
+            self.x2 = x + w
+        if isinstance(h, list):
+            hi = random.randint(h[0], h[1])
+            self.y2 = y + hi
+        else:
+            self.y2 = y + h
 
     def center(self):
         center_x = (self.x1 + self.x2) // 2
