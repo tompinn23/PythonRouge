@@ -4,6 +4,7 @@ sys.path.append("../")
 from bearlibterminal import terminal
 from game import features
 from game import generator
+from game import dungeonGenerator
 import random
 
 
@@ -62,21 +63,50 @@ class Map():
             self.game_map[room.x1][y].blocked = False
             self.game_map[room.x1][y].block_sight = False
 
-    def generate_dungeon(self, w ,h):
-        dungeon = generator.Generator(w, h)
-        dungeon.gen_level()
-        tiles = dungeon.gen_tiles_level()
-        y = 0
-        for row in tiles:
-            cur = list(row)
-            for x in range(len(cur)):
-                if cur[x] == '0' or cur[x] == '2':
+    # def generate_dungeon(self, w ,h):
+    #     dungeon = generator.Generator(w, h)
+    #     dungeon.gen_level()
+    #     tiles = dungeon.gen_tiles_level()
+    #     y = 0
+    #     for row in tiles:
+    #         cur = list(row)
+    #         for x in range(len(cur)):
+    #             if cur[x] == '0' or cur[x] == '2':
+    #                 self.game_map[x][y].blocked = True
+    #                 self.game_map[x][y].block_sight = True
+    #             if cur[x] == '1':
+    #                 self.game_map[x][y].blocked = False
+    #                 self.game_map[x][y].block_sight = False
+    #         y += 1
+    def generate_dungeon(self, w, h):
+        dm = dungeonGenerator.dungeonGenerator(w, h)
+        dm.generateCaves(40, 4)
+        # clear away small islands
+        unconnected = dm.findUnconnectedAreas()
+        for area in unconnected:
+            if len(area) < 35:
+                for x, y in area:
+                    dm.grid[x][y] = EMPTY
+        # generate rooms and corridors
+        dm.placeRandomRooms(5, 9, 1, 1, 2000)
+        x, y = dm.findEmptySpace(3)
+        while x:
+            dm.generateCorridors('l', x, y)
+            x, y = dm.findEmptySpace(3)
+        # join it all together
+        dm.connectAllRooms(0)
+        unconnected = dm.findUnconnectedAreas()
+        dm.joinUnconnectedAreas(unconnected)
+        dm.pruneDeadends(70)
+
+        for x in range(self.map_width):
+            for y in range(self.map_height):
+                if dm.grid[x][y] == EMPTY or dm.grid[x][y] == WALL or dm.grid[x][y] == OBSTACLE:
                     self.game_map[x][y].blocked = True
                     self.game_map[x][y].block_sight = True
-                if cur[x] == '1':
-                    self.game_map[x][y].blocked = False
-                    self.game_map[x][y].block_sight = False
-            y += 1
+            if  dm.grid[x][y] == FLOOR or dm.grid[x][y] == CORRIDOR or dm.grid[x][y] == DOOR or dm.grid[x][y] == CAVE:
+                self.game_map[x][y].blocked = False
+                self.game_map[x][y].block_sight = False
 
     def findPlayerLoc(self):
         playerLoc = False
