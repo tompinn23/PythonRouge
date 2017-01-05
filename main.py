@@ -83,8 +83,8 @@ def mainMenu():
 
 
 def playGame():
-    _map = Map(70, 50)
-    _map.generate_dungeon(70, 50)
+    _map = Map(50, 50)
+    _map.generate_Dungeon(50, 50)
     playerx, playery = _map.findPlayerLoc()
     player = Player(playerx, playery, False, 100,'@', "player", "Tom")
     terminal.clear()
