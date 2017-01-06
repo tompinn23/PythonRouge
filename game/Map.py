@@ -4,8 +4,8 @@ sys.path.append("../")
 from bearlibterminal import terminal
 from game import features
 from game import generator
-from game import dungeonGenerator
 import random
+from game.newGenerator import dMap
 
 #tile constants
 EMPTY = 0
@@ -73,20 +73,36 @@ class Map():
             self.game_map[room.x1][y].block_sight = False
 
     def generate_Dungeon(self, w ,h):
-        dungeon = generator.Generator(w, h)
-        dungeon.gen_level()
-        tiles = dungeon.gen_tiles_level()
-        y = 0
-        for row in tiles:
-            cur = list(row)
-            for x in range(len(cur)):
-                if cur[x] == '0' or cur[x] == '2':
-                    self.game_map[x][y].blocked = True
-                    self.game_map[x][y].block_sight = True
-                if cur[x] == '1':
-                    self.game_map[x][y].blocked = False
-                    self.game_map[x][y].block_sight = False
-            y += 1
+        # dungeon = generator.Generator(w, h)
+        # dungeon.gen_level()
+        # tiles = dungeon.gen_tiles_level()
+        # y = 0
+        # for row in tiles:
+            # cur = list(row)
+            # for x in range(len(cur)):
+                # if cur[x] == '0' or cur[x] == '2':
+                    # self.game_map[x][y].blocked = True
+                    # self.game_map[x][y].block_sight = True
+                # if cur[x] == '1':
+                    # self.game_map[x][y].blocked = False
+                    # self.game_map[x][y].block_sight = False
+            # y += 1
+        dm = dMap()
+        dm.makeMap(w,h,120,30,1000) 
+        for y in range(self.map_height):
+            for x in range(self.map_width):
+                    if dm.mapArr[y][x]==0:
+                        self.game_map[x][y].blocked = False
+                        self.game_map[x][y].block_sight = False
+                    if dm.mapArr[y][x]==1:
+                        self.game_map[x][y].blocked = True
+                        self.game_map[x][y].block_sight = True
+                    if dm.mapArr[y][x]==2:
+                        self.game_map[x][y].blocked = True
+                        self.game_map[x][y].block_sight = True
+                    if dm.mapArr[y][x]==3 or dm.mapArr[y][x]==4 or dm.mapArr[y][x]==5:
+                        self.game_map[x][y].blocked = False
+                        self.game_map[x][y].block_sight = False
     def generate_dungeon(self, w, h):
 ##        dm = dungeonGenerator.dungeonGenerator(w, h)
 ##        dm.generateCaves(40, 4)

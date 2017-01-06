@@ -15,6 +15,7 @@ logging.basicConfig(filename='coursework.log',
 # Load the terminal window and set config options
 terminal.open()
 terminal.set("window: size=70x50; font: terminal12x12.png, size=12x12;")
+terminal_set("0x40: at.png, align=center");
 terminal.refresh()
 # Load a player entity for testing
 
