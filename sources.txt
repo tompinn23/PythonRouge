@@ -1,3 +1,6 @@
 bearlibterminal docs http://foo.wyrd.name/en:bearlibterminal:reference
+
 python + tdl tutorial http://www.roguebasin.com/index.php?title=Roguelike_Tutorial,_using_python3%2Btdl
+
 new_fov http://www.roguebasin.com/index.php?title=Python_shadowcasting_implementation
+pathfinding https://github.com/brean/python-pathfinding

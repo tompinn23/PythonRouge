@@ -4,6 +4,7 @@ from bearlibterminal import terminal
 from . import constants
 
 
+
 class Entity():
     def __init__(self, x, y, dead, health, char, entityType):
         self.x = x
@@ -27,7 +28,7 @@ class Entity():
             self.y += dy
 
     def draw(self):
-        terminal.put(self.x, self.y, self.char)
+        renderer.put(self.x, self.y, self.char)
 
     def clear(self):
         terminal.put(self.x, self.y, ' ')
