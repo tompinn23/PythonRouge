@@ -88,7 +88,7 @@ def generate(cellsX, cellsY, cellSize=5):
                 continue
 
     while True:
-        unconnected = [x for x in getNeighborCells(current) if not x.connected]
+        unconnected = filter(lambda x: not x.connected, getNeighborCells(current))
         if not unconnected:
             break
 
@@ -100,11 +100,11 @@ def generate(cellsX, cellsY, cellSize=5):
         current = lastCell = neighbor
 
     # 4. While there are unconnected cells:
-    while [x for x in list(cells.values()) if not x.connected]:
+    while filter(lambda x: not x.connected, cells.values()):
         # 4a. Pick a random connected cell with unconnected neighbors and connect to one of them.
         candidates = []
-        for cell in [x for x in list(cells.values()) if x.connected]:
-            neighbors = [x for x in getNeighborCells(cell) if not x.connected]
+        for cell in filter(lambda x: x.connected, cells.values()):
+            neighbors = filter(lambda x: not x.connected, getNeighborCells(cell))
             if not neighbors:
                 continue
             candidates.append((cell, neighbors))
@@ -112,10 +112,10 @@ def generate(cellsX, cellsY, cellSize=5):
         cell.connect(random.choice(neighbors))
 
     # 5. Pick 0 or more pairs of adjacent cells that are not connected and connect them.
-    extraConnections = random.randint(int(cellsX + cellsY) / 4), int((cellsX + cellsY) / 1.2))
+    extraConnections = random.randint((cellsX + cellsY) / 4, int((cellsX + cellsY) / 1.2))
     maxRetries = 10
     while extraConnections > 0 and maxRetries > 0:
-        cell = random.choice(list(cells.values()))
+        cell = random.choice(cells.values())
         neighbor = random.choice(list(getNeighborCells(cell)))
         if cell in neighbor.connectedTo:
             maxRetries -= 1
@@ -125,7 +125,7 @@ def generate(cellsX, cellsY, cellSize=5):
 
     # 6. Within each cell, create a room of random shape
     rooms = []
-    for cell in list(cells.values()):
+    for cell in cells.values():
         width = random.randint(3, cellSize - 2)
         height = random.randint(3, cellSize - 2)
         x = (cell.x * cellSize) + random.randint(1, cellSize - width - 1)
@@ -139,10 +139,10 @@ def generate(cellsX, cellsY, cellSize=5):
 
     # 7. For each connection between two cells:
     connections = {}
-    for c in list(cells.values()):
+    for c in cells.values():
         for other in c.connectedTo:
             connections[tuple(sorted((c.id, other.id)))] = (c.room, other.room)
-    for a, b in list(connections.values()):
+    for a, b in connections.values():
         # 7a. Create a random corridor between the rooms in each cell.
         start = random.choice(a)
         end = random.choice(b)
@@ -178,7 +178,7 @@ def generate(cellsX, cellsY, cellSize=5):
             except KeyError:
                 continue
 
-    for xy, tile in tiles.items():
+    for xy, tile in tiles.iteritems():
         if not tile == "." and "." in getNeighborTiles(xy):
             tiles[xy] = "#"
     tiles[stairsUp] = "<"

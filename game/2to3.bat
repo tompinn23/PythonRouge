@@ -1,0 +1,1 @@
+py C:\Python34\Tools\scripts\2to3.py -w newGenerator.py
