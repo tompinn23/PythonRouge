@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from .node import Node
-from pathfinding.core.diagonal_movement import DiagonalMovement
+from .diagonal_movement import DiagonalMovement
 
 
 def build_nodes(width, height, matrix=None):

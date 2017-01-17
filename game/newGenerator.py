@@ -1,249 +1,196 @@
-# Class to produce random map layouts
-from random import *
-from math import *
- 
-class dMap:
-   def __init__(self):
-       self.roomList=[]
-       self.cList=[]
- 
-   def makeMap(self,xsize,ysize,fail,b1,mrooms):
-       """Generate random layout of rooms, corridors and other features"""
-       # makeMap can be modified to accept arguments for values of failed, and percentile of features.
-       # Create first room
-       self.size_x = xsize
-       self.size_y = ysize
-       # initialize map to all walls
-       self.mapArr=[] 
-       for y in range(ysize):
-           tmp = []
-           for x in range(xsize):
-               tmp.append(1)
-           self.mapArr.append( tmp )
- 
-       w,l,t=self.makeRoom()
-       while len(self.roomList)==0:
-           y=randrange(ysize-1-l)+1
-           x=randrange(xsize-1-w)+1
-           p=self.placeRoom(l,w,x,y,xsize,ysize,6,0)
-       failed=0
-       while failed<fail: #The lower the value that failed< , the smaller the dungeon
-           chooseRoom=randrange(len(self.roomList))
-           ex,ey,ex2,ey2,et=self.makeExit(chooseRoom)
-           feature=randrange(100)
-           if feature<b1: #Begin feature choosing (more features to be added here)
-               w,l,t=self.makeCorridor()
-           else:
-               w,l,t=self.makeRoom()
-           roomDone=self.placeRoom(l,w,ex2,ey2,xsize,ysize,t,et)
-           if roomDone==0: #If placement failed increase possibility map is full
-               failed+=1
-           elif roomDone==2: #Possiblilty of linking rooms
-               if self.mapArr[ey2][ex2]==0:
-                   if randrange(100)<7:
-                       self.makePortal(ex,ey)
-                   failed+=1
-           else: #Otherwise, link up the 2 rooms
-               self.makePortal(ex,ey)
-               failed=0
-               if t<5:
-                   tc=[len(self.roomList)-1,ex2,ey2,t]
-                   self.cList.append(tc)
-                   self.joinCorridor(len(self.roomList)-1,ex2,ey2,t,50)
-           if len(self.roomList)==mrooms:
-               failed=fail
-       self.finalJoins()
- 
-   def makeRoom(self):
-       """Randomly produce room size"""
-       rtype=5
-       rwide=randrange(8)+3
-       rlong=randrange(8)+3
-       return rwide,rlong,rtype
- 
-   def makeCorridor(self):
-       """Randomly produce corridor length and heading"""
-       clength=randrange(18)+3
-       heading=randrange(4)
-       if heading==0: #North
-           wd=1
-           lg=-clength
-       elif heading==1: #East
-           wd=clength
-           lg=1
-       elif heading==2: #South
-           wd=1
-           lg=clength
-       elif heading==3: #West
-           wd=-clength
-           lg=1
-       return wd,lg,heading
- 
-   def placeRoom(self,ll,ww,xposs,yposs,xsize,ysize,rty,ext):
-       """Place feature if enough space and return canPlace as true or false"""
-       #Arrange for heading
-       xpos=xposs
-       ypos=yposs
-       if ll<0:
-           ypos+=ll+1
-           ll=abs(ll)
-       if ww<0:
-           xpos+=ww+1
-           ww=abs(ww)
-       #Make offset if type is room
-       if rty==5:
-           if ext==0 or ext==2:
-               offset=randrange(ww)
-               xpos-=offset
-           else:
-               offset=randrange(ll)
-               ypos-=offset
-       #Then check if there is space
-       canPlace=1
-       if ww+xpos+1>xsize-1 or ll+ypos+1>ysize:
-           canPlace=0
-           return canPlace
-       elif xpos<1 or ypos<1:
-           canPlace=0
-           return canPlace
-       else:
-           for j in range(ll):
-               for k in range(ww):
-                   if self.mapArr[(ypos)+j][(xpos)+k]!=1:
-                       canPlace=2
-       #If there is space, add to list of rooms
-       if canPlace==1:
-           temp=[ll,ww,xpos,ypos]
-           self.roomList.append(temp)
-           for j in range(ll+2): #Then build walls
-               for k in range(ww+2):
-                   self.mapArr[(ypos-1)+j][(xpos-1)+k]=2
-           for j in range(ll): #Then build floor
-               for k in range(ww):
-                   self.mapArr[ypos+j][xpos+k]=0
-       return canPlace #Return whether placed is true/false
- 
-   def makeExit(self,rn):
-       """Pick random wall and random point along that wall"""
-       room=self.roomList[rn]
-       while True:
-           rw=randrange(4)
-           if rw==0: #North wall
-               rx=randrange(room[1])+room[2]
-               ry=room[3]-1
-               rx2=rx
-               ry2=ry-1
-           elif rw==1: #East wall
-               ry=randrange(room[0])+room[3]
-               rx=room[2]+room[1]
-               rx2=rx+1
-               ry2=ry
-           elif rw==2: #South wall
-               rx=randrange(room[1])+room[2]
-               ry=room[3]+room[0]
-               rx2=rx
-               ry2=ry+1
-           elif rw==3: #West wall
-               ry=randrange(room[0])+room[3]
-               rx=room[2]-1
-               rx2=rx-1
-               ry2=ry
-           if self.mapArr[ry][rx]==2: #If space is a wall, exit
-               break
-       return rx,ry,rx2,ry2,rw
- 
-   def makePortal(self,px,py):
-       """Create doors in walls"""
-       ptype=randrange(100)
-       if ptype>90: #Secret door
-           self.mapArr[py][px]=5
-           return
-       elif ptype>75: #Closed door
-           self.mapArr[py][px]=4
-           return
-       elif ptype>40: #Open door
-           self.mapArr[py][px]=3
-           return
-       else: #Hole in the wall
-           self.mapArr[py][px]=0
- 
-   def joinCorridor(self,cno,xp,yp,ed,psb):
-       """Check corridor endpoint and make an exit if it links to another room"""
-       cArea=self.roomList[cno]
-       if xp!=cArea[2] or yp!=cArea[3]: #Find the corridor endpoint
-           endx=xp-(cArea[1]-1)
-           endy=yp-(cArea[0]-1)
-       else:
-           endx=xp+(cArea[1]-1)
-           endy=yp+(cArea[0]-1)
-       checkExit=[]
-       if ed==0: #North corridor
-           if endx>1:
-               coords=[endx-2,endy,endx-1,endy]
-               checkExit.append(coords)
-           if endy>1:
-               coords=[endx,endy-2,endx,endy-1]
-               checkExit.append(coords)
-           if endx<self.size_x-2:
-               coords=[endx+2,endy,endx+1,endy]
-               checkExit.append(coords)
-       elif ed==1: #East corridor
-           if endy>1:
-               coords=[endx,endy-2,endx,endy-1]
-               checkExit.append(coords)
-           if endx<self.size_x-2:
-               coords=[endx+2,endy,endx+1,endy]
-               checkExit.append(coords)
-           if endy<self.size_y-2:
-               coords=[endx,endy+2,endx,endy+1]
-               checkExit.append(coords)
-       elif ed==2: #South corridor
-           if endx<self.size_x-2:
-               coords=[endx+2,endy,endx+1,endy]
-               checkExit.append(coords)
-           if endy<self.size_y-2:
-               coords=[endx,endy+2,endx,endy+1]
-               checkExit.append(coords)
-           if endx>1:
-               coords=[endx-2,endy,endx-1,endy]
-               checkExit.append(coords)
-       elif ed==3: #West corridor
-           if endx>1:
-               coords=[endx-2,endy,endx-1,endy]
-               checkExit.append(coords)
-           if endy>1:
-               coords=[endx,endy-2,endx,endy-1]
-               checkExit.append(coords)
-           if endy<self.size_y-2:
-               coords=[endx,endy+2,endx,endy+1]
-               checkExit.append(coords)
-       for xxx,yyy,xxx1,yyy1 in checkExit: #Loop through possible exits
-           if self.mapArr[yyy][xxx]==0: #If joins to a room
-               if randrange(100)<psb: #Possibility of linking rooms
-                   self.makePortal(xxx1,yyy1)
- 
-   def finalJoins(self):
-       """Final stage, loops through all the corridors to see if any can be joined to other rooms"""
-       for x in self.cList:
-           self.joinCorridor(x[0],x[1],x[2],x[3],10)
- 
-# ----------------------------------------------------------------------------
-# Main
-# ----------------------------------------------------------------------------
+import random
+import itertools
+import sys
+
+
+def _AStar(start, goal):
+    def heuristic(a, b):
+        ax, ay = a
+        bx, by = b
+        return abs(ax - bx) + abs(ay - by)
+
+    def reconstructPath(n):
+        if n == start:
+            return [n]
+        return reconstructPath(cameFrom[n]) + [n]
+
+    def neighbors(n):
+        x, y = n
+        return (x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)
+
+    closed = set()
+    open = set()
+    open.add(start)
+    cameFrom = {}
+    gScore = {start: 0}
+    fScore = {start: heuristic(start, goal)}
+
+    while open:
+        current = None
+        for i in open:
+            if current is None or fScore[i] < fScore[current]:
+                current = i
+
+        if current == goal:
+            return reconstructPath(goal)
+
+        open.remove(current)
+        closed.add(current)
+
+        for neighbor in neighbors(current):
+            if neighbor in closed:
+                continue
+            g = gScore[current] + 1
+
+            if neighbor not in open or g < gScore[neighbor]:
+                cameFrom[neighbor] = current
+                gScore[neighbor] = g
+                fScore[neighbor] = gScore[neighbor] + heuristic(neighbor, goal)
+                if neighbor not in open:
+                    open.add(neighbor)
+    return ()
+
+
+def generate(cellsX, cellsY, cellSize=5):
+    # 1. Divide the map into a grid of evenly sized cells.
+
+    class Cell(object):
+        def __init__(self, x, y, id):
+            self.x = x
+            self.y = y
+            self.id = id
+            self.connected = False
+            self.connectedTo = []
+            self.room = None
+
+        def connect(self, other):
+            self.connectedTo.append(other)
+            other.connectedTo.append(self)
+            self.connected = True
+            other.connected = True
+
+    cells = {}
+    for y in range(cellsY):
+        for x in range(cellsX):
+            c = Cell(x, y, len(cells))
+            cells[(c.x, c.y)] = c
+
+    # 2. Pick a random cell as the current cell and mark it as connected.
+    current = lastCell = firstCell = random.choice(cells.values())
+    current.connected = True
+
+    # 3. While the current cell has unconnected neighbor cells:
+    def getNeighborCells(cell):
+        for x, y in ((-1, 0), (0, -1), (1, 0), (0, 1)):
+            try:
+                yield cells[(cell.x + x, cell.y + y)]
+            except KeyError:
+                continue
+
+    while True:
+        unconnected = filter(lambda x: not x.connected, getNeighborCells(current))
+        if not unconnected:
+            break
+
+        # 3a. Connect to one of them.
+        neighbor = random.choice(unconnected)
+        current.connect(neighbor)
+
+        # 3b. Make that cell the current cell.
+        current = lastCell = neighbor
+
+    # 4. While there are unconnected cells:
+    while filter(lambda x: not x.connected, cells.values()):
+        # 4a. Pick a random connected cell with unconnected neighbors and connect to one of them.
+        candidates = []
+        for cell in filter(lambda x: x.connected, cells.values()):
+            neighbors = filter(lambda x: not x.connected, getNeighborCells(cell))
+            if not neighbors:
+                continue
+            candidates.append((cell, neighbors))
+        cell, neighbors = random.choice(candidates)
+        cell.connect(random.choice(neighbors))
+
+    # 5. Pick 0 or more pairs of adjacent cells that are not connected and connect them.
+    extraConnections = random.randint((cellsX + cellsY) / 4, int((cellsX + cellsY) / 1.2))
+    maxRetries = 10
+    while extraConnections > 0 and maxRetries > 0:
+        cell = random.choice(cells.values())
+        neighbor = random.choice(list(getNeighborCells(cell)))
+        if cell in neighbor.connectedTo:
+            maxRetries -= 1
+            continue
+        cell.connect(neighbor)
+        extraConnections -= 1
+
+    # 6. Within each cell, create a room of random shape
+    rooms = []
+    for cell in cells.values():
+        width = random.randint(3, cellSize - 2)
+        height = random.randint(3, cellSize - 2)
+        x = (cell.x * cellSize) + random.randint(1, cellSize - width - 1)
+        y = (cell.y * cellSize) + random.randint(1, cellSize - height - 1)
+        floorTiles = []
+        for i in range(width):
+            for j in range(height):
+                floorTiles.append((x + i, y + j))
+        cell.room = floorTiles
+        rooms.append(floorTiles)
+
+    # 7. For each connection between two cells:
+    connections = {}
+    for c in cells.values():
+        for other in c.connectedTo:
+            connections[tuple(sorted((c.id, other.id)))] = (c.room, other.room)
+    for a, b in connections.values():
+        # 7a. Create a random corridor between the rooms in each cell.
+        start = random.choice(a)
+        end = random.choice(b)
+
+        corridor = []
+        for tile in _AStar(start, end):
+            if tile not in a and not tile in b:
+                corridor.append(tile)
+        rooms.append(corridor)
+
+    # 8. Place staircases in the cell picked in step 2 and the lest cell visited in step 3b.
+    stairsUp = random.choice(firstCell.room)
+    stairsDown = random.choice(lastCell.room)
+
+    # create tiles
+    tiles = {}
+    tilesX = cellsX * cellSize
+    tilesY = cellsY * cellSize
+    for x in range(tilesX):
+        for y in range(tilesY):
+            tiles[(x, y)] = " "
+    for xy in itertools.chain.from_iterable(rooms):
+        tiles[xy] = "."
+
+    # every tile adjacent to a floor is a wall
+    def getNeighborTiles(xy):
+        tx, ty = xy
+        for x, y in ((-1, -1), (0, -1), (1, -1),
+                     (-1, 0), (1, 0),
+                     (-1, 1), (0, 1), (1, 1)):
+            try:
+                yield tiles[(tx + x, ty + y)]
+            except KeyError:
+                continue
+
+    for xy, tile in tiles.iteritems():
+        if not tile == "." and "." in getNeighborTiles(xy):
+            tiles[xy] = "#"
+    tiles[stairsUp] = "<"
+    tiles[stairsDown] = ">"
+
+    for y in range(tilesY):
+        for x in range(tilesX):
+            sys.stdout.write(tiles[(x, y)])
+        sys.stdout.write("\n")
+
+    return tiles
+
+
 if __name__ == "__main__":
-    startx=20   # map width
-    starty=10   # map height
-    themap= dMap()
-    themap.makeMap(startx,starty,110,50,60) 
-    for y in range(starty):
-            line = ""
-            for x in range(startx):
-                    if themap.mapArr[y][x]==0:
-                            line += "."
-                    if themap.mapArr[y][x]==1:
-                            line += " "
-                    if themap.mapArr[y][x]==2:
-                            line += "#"
-                    if themap.mapArr[y][x]==3 or themap.mapArr[y][x]==4 or themap.mapArr[y][x]==5:
-                            line += "="
-            print(line)
+    generate(8, 5, 8)

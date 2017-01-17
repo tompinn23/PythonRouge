@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import heapq # used for the so colled "open list" that stores known nodes
 import logging
-from pathfinding.core.heuristic import manhatten, octile
-from pathfinding.core.util import backtrace
-from pathfinding.core.diagonal_movement import DiagonalMovement
+from game.pathfinding.core.heuristic import manhatten, octile
+from game.pathfinding.core.util import backtrace
+from game.pathfinding.core.diagonal_movement import DiagonalMovement
 
 
 # max. amount of tries until we abort the search
