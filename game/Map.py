@@ -4,12 +4,18 @@ sys.path.append("../")
 from bearlibterminal import terminal
 import random
 import game.newGenerator
-from game.newGenerator import Tiles
+from enum import Enum
+
+class TileType(Enum):
+    EMPTY = 0
+    FLOOR = 1
+    WALL = 2
 
 floor = terminal.color_from_argb(100, 30, 40, 38)
 floor_lit = terminal.color_from_argb(100, 173, 173, 161)
 wall = terminal.color_from_argb(100, 97, 145, 49)
 wall_lit = terminal.color_from_argb(100, 136, 181, 91)
+black = terminal.color_from_argb(100, 0,0,0)
 compass = ["N", "E", "S", "W"]
 
 
@@ -43,42 +49,24 @@ class Map():
             game_map = map_file
         self.game_map = game_map
 
-    def create_room(self, room):
-
-        # go through the tiles in the rectangle and make them passable
-        for x in range(room.x1 + 1, room.x2):
-            for y in range(room.y1 + 1, room.y2):
-                self.game_map[x][y].blocked = False
-                self.game_map[x][y].block_sight = False
-
-    def create_h_tunnel(self, room):
-        for x in range(min(room.x1, room.x2), max(room.x1, room.x2) + 1):
-            self.game_map[x][room.y1].blocked = False
-            self.game_map[x][room.y1].block_sight = False
-
-    def create_v_tunnel(self, room):
-        for y in range(min(room.y1, room.y2), max(room.y1, room.y2) + 1):
-            self.game_map[room.x1][y].blocked = False
-            self.game_map[room.x1][y].block_sight = False
-
     def generate_Dungeon(self, w ,h):
-        aw = w / 5
-        ah = h / 5
-        tiles = game.newGenerator.generate(int(aw), int(ah), 5)
+        tiles = game.newGenerator.generate(7,5,10)
         for y in range(self.map_height):
             for x in range(self.map_width):
-                    if tiles[(x, y)] == Tiles.FLOOR:
+                    if tiles[(x, y)] == ".":
+                        self.game_map[x][y].tile = TileType.FLOOR
                         self.game_map[x][y].blocked = False
-                        self.game_map[x][y].block_sight = False
-                    if tiles[(x, y)] == Tiles.WALL:
+                        self.game_map[x][y].block_light = False
+                    if tiles[(x, y)] == "#":
+                        self.game_map[x][y].tile = TileType.WALL
                         self.game_map[x][y].blocked = True
-                        self.game_map[x][y].block_sight = True
-                    if tiles[(x, y)] == Tiles.EMPTY:
-                        self.game_map[x][y].blocked = True
-                        self.game_map[x][y].block_sight = True
-                    if tiles[(x, y)] == Tiles.STAIRDOWN or tiles[(x, y)] == Tiles.STAIRUP:
+                        self.game_map[x][y].block_light = True
+                    if tiles[(x, y)] == " ":
+                        self.game_map[x][y].tile = TileType.EMPTY
+                    if tiles[(x, y)] == "<" or tiles[(x, y)] == ">":
+                        self.game_map[x][y].tile = TileType.FLOOR
                         self.game_map[x][y].blocked = False
-                        self.game_map[x][y].block_sight = False
+                        self.game_map[x][y].block_light = False
 
 
     def findPlayerLoc(self):
@@ -109,6 +97,9 @@ class Map():
                     else:
                         terminal.bkcolor(floor)
                         terminal.put(x, y, ' ')
+                if self.game_map[x][y].tile == TileType.EMPTY:
+                    terminal.bkcolor(black)
+                    terminal.put(x, y, ' ')
 
     def draw_player_background(self, x, y):
         terminal.layer(0)
@@ -185,7 +176,7 @@ class Tile():
     # a tile of the map and its properties
     def __init__(self, blocked, block_sight=None):
         self.blocked = blocked
-
+        self.tile = TileType.EMPTY
         # all tiles start unexplored
         self.explored = False
         self.lit = False

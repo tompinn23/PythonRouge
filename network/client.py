@@ -14,11 +14,11 @@ class Client():
     def connect(self, name):
         self.name = name
         self.sock.connect((self.address, self.port))
-        data = [1, "Tom", {}]
+        data = [1, name, {0, 0}]
         self.sock.sendall(pickle.dumps(data))
 
     def sendMessage(self, msgType, msg):
-        data = [msgType, self.name, {}]
+        data = [msgType, self.name, msg]
         self.sendall(pickle.dumps(data))
 
     def readData(self):

@@ -8,6 +8,8 @@ from network import Server
 from network import Client
 import logging
 import time
+import pickle
+
 # Setup Logging to file specifing date and time added to message
 logging.basicConfig(filename='coursework.log',
                     format='%(asctime)s %(message)s',
@@ -15,7 +17,6 @@ logging.basicConfig(filename='coursework.log',
 # Load the terminal window and set config options
 terminal.open()
 terminal.set("window: size=70x50; font: terminal12x12.png, size=12x12;")
-terminal.set("0x40: at.png, align=center");
 terminal.refresh()
 # Load a player entity for testing
 
@@ -84,9 +85,8 @@ def mainMenu():
 
 
 def playGame():
-    _map = Map(50, 50)
-    _map.generate_Dungeon(50, 50)
-    
+    _map = Map(70, 50)
+    _map.generate_Dungeon(70, 50)
     playerx, playery = _map.findPlayerLoc()
     player = Player(playerx, playery, False, 100,'@', "player", "Tom")
     terminal.clear()
@@ -106,8 +106,43 @@ def playGame():
 
 
 def joinGame():
-    pass
-
+    terminal.clear()
+    terminal.printf(4, 3, "Enter IP Address:")
+    ip = ""
+    terminal.read_str(4,4, ip, 12)
+    print(ip)
+    terminal.clear()
+    terminal.printf(4, 3, "Enter Port:")
+    port = ""
+    terminal.read_str(4,4, port, 6)
+    print(port)
+    client = Client(ip, int(port))
+    client.connect("Tom")
+    client.sendMessage(456, {})
+    while True:
+        data = client.readData()
+        if data is not None:
+            break
+    _map = pickles.loads(data)
+    playerx, playery = _map.findPlayerLoc()
+    player = Player(playerx, playery, False, 100,'@', "player", "Tom")
+    terminal.clear()
+    _map.do_fov(player.x, player.y, constants.FOV_RADIUS)
+    while True:
+        _map.render_map()
+        _map.draw_player_background(player.x, player.y)
+        terminal.layer(1)
+        player.draw()
+        terminal.refresh()
+        player.clear()
+        ex = handle_keys(player, _map.game_map)
+        if ex == 1:
+            _map.do_fov(player.x, player.y, constants.FOV_RADIUS)
+        if ex == 2:
+            break
+    
+    
+    
 
 logging.info("Activated Main Menu")
 # We get choice from the Main Menu then we either exit the game or do a

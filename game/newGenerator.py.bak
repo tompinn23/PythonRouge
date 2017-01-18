@@ -76,7 +76,7 @@ def generate(cellsX, cellsY, cellSize=5):
             cells[(c.x, c.y)] = c
 
     # 2. Pick a random cell as the current cell and mark it as connected.
-    current = lastCell = firstCell = random.choice(list(cells.values()))
+    current = lastCell = firstCell = random.choice(cells.values())
     current.connected = True
 
     # 3. While the current cell has unconnected neighbor cells:
@@ -193,4 +193,4 @@ def generate(cellsX, cellsY, cellSize=5):
 
 
 if __name__ == "__main__":
-    generate(8, 5, 8)
+    generate(7, 5, 10)

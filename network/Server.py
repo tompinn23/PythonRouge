@@ -12,7 +12,7 @@ playerLock = threading.Lock()
 # Dictionary containing player xy coords.
 players = {}
 entities = {}
-
+_map = None
 
 class GameServerProtocol(socketserver.BaseRequestHandler):
     """This is the protocol for handling incoming messages."""
@@ -26,6 +26,9 @@ class GameServerProtocol(socketserver.BaseRequestHandler):
             playerLock.release()
         response = pickle.dumps(players)
         self.request.sendall(response)
+        if data[0] == 456:
+            response = pickle.dumps(_map)
+            self.request.send(response)
 
 
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
@@ -41,10 +44,16 @@ class Server():
         server = ThreadedTCPServer((address, port), GameServerProtocol)
         self.server = server
         logging.info("Server Thread Starting")
+        print("Server Starting")
         server_thread = threading.Thread(target=server.serve_forever)
         self.server_thread = server_thread
         server_thread.start()
         logging.info("Server Thread Started")
+        print("Server Started")
+        _map = Map(70,50)
+        _map.generate_Dungeon(70,50)
+        
+        
 
 
     def closeServer(self):
