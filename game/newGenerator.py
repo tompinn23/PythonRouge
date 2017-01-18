@@ -1,7 +1,14 @@
 import random
 import itertools
 import sys
+from enum import Enum
 
+class Tiles(Enum):
+    EMPTY = 0
+    FLOOR = 1
+    WALL = 2
+    STAIRUP = 3
+    STAIRDOWN = 4
 
 def _AStar(start, goal):
     def heuristic(a, b):
@@ -112,7 +119,7 @@ def generate(cellsX, cellsY, cellSize=5):
         cell.connect(random.choice(neighbors))
 
     # 5. Pick 0 or more pairs of adjacent cells that are not connected and connect them.
-    extraConnections = random.randint(int(cellsX + cellsY) / 4), int((cellsX + cellsY) / 1.2))
+    extraConnections = random.randint(int(((cellsX + cellsY) / 4)), int((cellsX + cellsY) / 1.2))
     maxRetries = 10
     while extraConnections > 0 and maxRetries > 0:
         cell = random.choice(list(cells.values()))
@@ -163,9 +170,9 @@ def generate(cellsX, cellsY, cellSize=5):
     tilesY = cellsY * cellSize
     for x in range(tilesX):
         for y in range(tilesY):
-            tiles[(x, y)] = " "
+            tiles[(x, y)] = Tiles.EMPTY
     for xy in itertools.chain.from_iterable(rooms):
-        tiles[xy] = "."
+        tiles[xy] = Tiles.FLOOR
 
     # every tile adjacent to a floor is a wall
     def getNeighborTiles(xy):
@@ -179,18 +186,18 @@ def generate(cellsX, cellsY, cellSize=5):
                 continue
 
     for xy, tile in tiles.items():
-        if not tile == "." and "." in getNeighborTiles(xy):
-            tiles[xy] = "#"
-    tiles[stairsUp] = "<"
-    tiles[stairsDown] = ">"
+        if not tile == Tiles.FLOOR and Tiles.FLOOR in getNeighborTiles(xy):
+            tiles[xy] = Tiles.WALL
+    tiles[stairsUp] = Tiles.STAIRUP
+    tiles[stairsDown] = Tiles.STAIRDOWN
 
-    for y in range(tilesY):
-        for x in range(tilesX):
-            sys.stdout.write(tiles[(x, y)])
-        sys.stdout.write("\n")
+    #for y in range(tilesY):
+    #    for x in range(tilesX):
+    #        sys.stdout.write(tiles[(x, y)])
+    #   sys.stdout.write("\n")
 
     return tiles
 
 
 if __name__ == "__main__":
-    generate(8, 5, 8)
+    generate(7, 5, 10)

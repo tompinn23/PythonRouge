@@ -3,7 +3,8 @@ import logging
 sys.path.append("../")
 from bearlibterminal import terminal
 import random
-from game.newGenerator import dMap
+import game.newGenerator
+from game.newGenerator import Tiles
 
 floor = terminal.color_from_argb(100, 30, 40, 38)
 floor_lit = terminal.color_from_argb(100, 173, 173, 161)
@@ -61,20 +62,21 @@ class Map():
             self.game_map[room.x1][y].block_sight = False
 
     def generate_Dungeon(self, w ,h):
-        dm = dMap()
-        dm.makeMap(w,h,300,20,600) 
+        aw = w / 5
+        ah = h / 5
+        tiles = game.newGenerator.generate(int(aw), int(ah), 5)
         for y in range(self.map_height):
             for x in range(self.map_width):
-                    if dm.mapArr[y][x]==0:
+                    if tiles[(x, y)] == Tiles.FLOOR:
                         self.game_map[x][y].blocked = False
                         self.game_map[x][y].block_sight = False
-                    if dm.mapArr[y][x]==1:
+                    if tiles[(x, y)] == Tiles.WALL:
                         self.game_map[x][y].blocked = True
                         self.game_map[x][y].block_sight = True
-                    if dm.mapArr[y][x]==2:
+                    if tiles[(x, y)] == Tiles.EMPTY:
                         self.game_map[x][y].blocked = True
                         self.game_map[x][y].block_sight = True
-                    if dm.mapArr[y][x]==3 or dm.mapArr[y][x]==4 or dm.mapArr[y][x]==5:
+                    if tiles[(x, y)] == Tiles.STAIRDOWN or tiles[(x, y)] == Tiles.STAIRUP:
                         self.game_map[x][y].blocked = False
                         self.game_map[x][y].block_sight = False
 

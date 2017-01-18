@@ -28,7 +28,7 @@ class Entity():
             self.y += dy
 
     def draw(self):
-        renderer.put(self.x, self.y, self.char)
+        terminal.put(self.x, self.y, self.char)
 
     def clear(self):
         terminal.put(self.x, self.y, ' ')
