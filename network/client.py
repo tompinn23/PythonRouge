@@ -19,7 +19,7 @@ class Client():
 
     def sendMessage(self, msgType, msg):
         data = [msgType, self.name, msg]
-        self.sendall(pickle.dumps(data))
+        self.sock.sendall(pickle.dumps(data))
 
     def readData(self):
         rlist, wlist, xlist = select.select([self.sock], [], [])

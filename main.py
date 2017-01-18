@@ -108,22 +108,24 @@ def playGame():
 def joinGame():
     terminal.clear()
     terminal.printf(4, 3, "Enter IP Address:")
-    ip = ""
-    terminal.read_str(4,4, ip, 12)
-    print(ip)
+    ip = terminal.read_str(4,4, "", 16)
     terminal.clear()
     terminal.printf(4, 3, "Enter Port:")
-    port = ""
-    terminal.read_str(4,4, port, 6)
-    print(port)
-    client = Client(ip, int(port))
-    client.connect("Tom")
+    port = terminal.read_str(4,4, "", 6)
+    terminal.clear()
+    terminal.printf(4, 3, "Enter Nickname:")
+    name = terminal.read_str(4,4, "", 10)
+    client = Client(ip[1], int(port[1]))
+    client.connect(name)
     client.sendMessage(456, {})
+    _map = Map(70,50)
     while True:
         data = client.readData()
         if data is not None:
-            break
-    _map = pickles.loads(data)
+            if data[0] == name:
+                pass
+            if data[0] == 456:
+                _map.game_map = pickle.loads(data[1])
     playerx, playery = _map.findPlayerLoc()
     player = Player(playerx, playery, False, 100,'@', "player", "Tom")
     terminal.clear()
