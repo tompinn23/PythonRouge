@@ -9,6 +9,7 @@ from network import Client
 import logging
 import time
 import pickle
+import pdb
 
 # Setup Logging to file specifing date and time added to message
 logging.basicConfig(filename='coursework.log',
@@ -121,8 +122,11 @@ def joinGame():
     _map = Map(70,50)
     while True:
         data = client.readData()
+        data = pickle.loads(data)
+        pickle.loads(
+        print(data)
         if data is not None:
-            if data[0] == name:
+            if data[0] == 0:
                 pass
             if data[0] == 456:
                 _map.game_map = pickle.loads(data[1])
@@ -142,9 +146,6 @@ def joinGame():
             _map.do_fov(player.x, player.y, constants.FOV_RADIUS)
         if ex == 2:
             break
-    
-    
-    
 
 logging.info("Activated Main Menu")
 # We get choice from the Main Menu then we either exit the game or do a

@@ -24,11 +24,12 @@ class GameServerProtocol(socketserver.BaseRequestHandler):
             playerLock.acquire()
             players[data[1]] = data[2]
             playerLock.release()
-        response = pickle.dumps(players)
-        self.request.sendall(response)
+            dPlayer = pickle.dumps(players)
+            response = pickles.dumps([0, dPlayer])
+            self.request.sendall(response)
         if data[0] == 456:
-            response = [1, pickle.dumps(_map.game_map)]
-            self.request.send(response)
+            response = pickle.dumps([456, pickle.dumps(_map.game_map)])
+        self.request.send(response)
 
 
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
