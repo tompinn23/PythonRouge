@@ -29,6 +29,8 @@ class GameServerProtocol(socketserver.BaseRequestHandler):
             self.request.sendall(response)
         if data[0] == 456:
             response = pickle.dumps([456, pickle.dumps(_map.game_map)])
+        else:
+            response = ""
         self.request.send(response)
 
 
