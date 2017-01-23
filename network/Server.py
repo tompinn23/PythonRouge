@@ -3,62 +3,67 @@ sys.path.append("../")
 from game import Map
 from game import Monster
 
-import socketserver
-import threading
 import pickle
 import logging
-# Lock for making sure that only one thread access the players data at a time.
-playerLock = threading.Lock()
-# Dictionary containing player xy coords.
-players = {}
-entities = {}
-_map = None
+import time
 
-class GameServerProtocol(socketserver.BaseRequestHandler):
-    """This is the protocol for handling incoming messages."""
-
-    def handle(self):
-        data = pickle.loads(self.request.recv(1024))
-        print(threading.current_thread())
-        if data[0] == 1:
-            playerLock.acquire()
-            players[data[1]] = data[2]
-            playerLock.release()
-            dPlayer = pickle.dumps(players)
-            response = pickles.dumps([0, dPlayer])
-            self.request.sendall(response)
-        if data[0] == 456:
-            response = pickle.dumps([456, pickle.dumps(_map.game_map)])
-        else:
-            response = ""
-        self.request.send(response)
+logging.basicConfig(filename='server.log',level=logging.INFO)
 
 
-class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
-    """This class just exists to be a subclass of
-    ThreadingMixIn and TCPServer"""
-    pass
+from weakref import WeakKeyDictionary
+
+from PodSixNet.Server import Server
+from PodSixNet.Channel import Channel
+
+class ClientChannel(Channel):
+    """
+    	This is the server representation of a single connected client.
+    	"""
+
+    def __init__(self, *args, **kwargs):
+        self.nickname = "anonymous"
+        Channel.__init__(self, *args, **kwargs)
+
+    def Close(self):
+        self._server.DelPlayer(self)
+
+    ##################################
+    ### Network specific callbacks ###
+    ##################################
+
+    def Network_message(self, data):
+        self._server.SendToAll({"action": "message", "message": data['message'], "who": self.nickname})
+
+    def Network_nickname(self, data):
+        self.nickname = data['nickname']
+        self._server.SendPlayers()
 
 
-class Server():
-    def __init__(self, address, port):
-        self.address = address
-        self.port = port
-        server = ThreadedTCPServer((address, port), GameServerProtocol)
-        self.server = server
-        logging.info("Server Thread Starting")
-        print("Server Starting")
-        server_thread = threading.Thread(target=server.serve_forever)
-        self.server_thread = server_thread
-        server_thread.start()
-        logging.info("Server Thread Started")
-        print("Server Started")
-        _map = Map(70,50)
-        _map.generate_Dungeon(70,50)
-        
-        
+class GameServer(Server):
+    channelClass = ClientChannel
 
+    def __init__(self, *args, **kwargs):
+        Server.__init__(self, *args, **kwargs)
+        self.players = WeakKeyDictionary()
+        print('Server launched')
+        logging.info("Server Launched")
 
-    def closeServer(self):
-        self.server.shutdown()
-        logging.info(self.server_thread.isAlive)
+    def Connected(self, channel):
+        self.AddPlayer(channel)
+
+    def AddPlayer(self, player):
+        print("New Player" + str(player.addr))
+        self.players[player] = True
+        print("players", [p for p in self.players])
+
+    def DelPlayer(self, player):
+        print("Deleting Player" + str(player.addr))
+        del self.players[player]
+
+    def SendToAll(self, action , message):
+        [p.Send({"action": action, "message": message}) for p in self.players]
+
+    def Launch(self):
+        while True:
+            self.Pump()
+            time.sleep(0.0001)

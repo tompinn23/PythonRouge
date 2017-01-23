@@ -1,11 +1,7 @@
-from network import Server
+from network.Server import GameServer
 from game import Player
 import socket
 
-server = Server(socket.gethostbyname(socket.gethostname()), 32078)
+server = GameServer(socket.gethostbyname(socket.gethostname()), 32078)
 
 print(socket.gethostbyname(socket.gethostname()))
-
-
-while server.server_thread.isAlive:
-    pass

@@ -1,15 +1,15 @@
 # imports
 from bearlibterminal import terminal
-from game import Player
-from game import Map
-from game import Rect
+from game.Player import Player
+from game.Map import Map
+from game.Rect import Rect
 from game import constants
-from network import Server
-from network import Client
+from network.Client import Client
 import logging
 import time
 import pickle
 import pdb
+import json
 
 # Setup Logging to file specifing date and time added to message
 logging.basicConfig(filename='coursework.log',
@@ -116,36 +116,6 @@ def joinGame():
     terminal.clear()
     terminal.printf(4, 3, "Enter Nickname:")
     name = terminal.read_str(4,4, "", 10)
-    client = Client(ip[1], int(port[1]))
-    client.connect(name)
-    client.sendMessage(456, {})
-    _map = Map(70,50)
-    while True:
-        data = client.readData()
-        data = pickle.loads(data)
-        pickle.loads(
-        print(data)
-        if data is not None:
-            if data[0] == 0:
-                pass
-            if data[0] == 456:
-                _map.game_map = pickle.loads(data[1])
-    playerx, playery = _map.findPlayerLoc()
-    player = Player(playerx, playery, False, 100,'@', "player", "Tom")
-    terminal.clear()
-    _map.do_fov(player.x, player.y, constants.FOV_RADIUS)
-    while True:
-        _map.render_map()
-        _map.draw_player_background(player.x, player.y)
-        terminal.layer(1)
-        player.draw()
-        terminal.refresh()
-        player.clear()
-        ex = handle_keys(player, _map.game_map)
-        if ex == 1:
-            _map.do_fov(player.x, player.y, constants.FOV_RADIUS)
-        if ex == 2:
-            break
 
 logging.info("Activated Main Menu")
 # We get choice from the Main Menu then we either exit the game or do a
