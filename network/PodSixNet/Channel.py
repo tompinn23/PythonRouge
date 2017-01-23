@@ -1,6 +1,6 @@
 import sys
 
-from PodSixNet.rencode import loads, dumps
+from network.PodSixNet.rencode import loads, dumps
 
 from network.PodSixNet.async import asynchat
 

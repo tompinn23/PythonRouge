@@ -1,6 +1,6 @@
 import socket
 
-from PodSixNet.Channel import Channel
+from network.PodSixNet.Channel import Channel
 
 from network.PodSixNet.async import poll, asyncore
 

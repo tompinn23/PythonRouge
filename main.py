@@ -2,15 +2,12 @@
 from bearlibterminal import terminal
 from game.Player import Player
 from game.Map import Map
-from game.Rect import Rect
 from game import constants
 from network.Client import Client
 import logging
-import time
 import pickle
-import pdb
-import json
-
+import time
+from multiprocessing import Process , Queue
 # Setup Logging to file specifing date and time added to message
 logging.basicConfig(filename='coursework.log',
                     format='%(asctime)s %(message)s',
@@ -20,7 +17,6 @@ terminal.open()
 terminal.set("window: size=70x50; font: terminal12x12.png, size=12x12;")
 terminal.refresh()
 # Load a player entity for testing
-
 
 def handle_keys(entity, _map):
     """Function for handling input for an entity specified in the arguments"""
@@ -92,6 +88,9 @@ def playGame():
     player = Player(playerx, playery, False, 100,'@', "player", "Tom")
     terminal.clear()
     _map.do_fov(player.x, player.y, constants.FOV_RADIUS)
+    gameLoop(_map, player)
+
+def gameLoop(_map, player):
     while True:
         _map.render_map()
         _map.draw_player_background(player.x, player.y)
@@ -105,7 +104,6 @@ def playGame():
         if ex == 2:
             break
 
-
 def joinGame():
     terminal.clear()
     terminal.printf(4, 3, "Enter IP Address:")
@@ -116,6 +114,31 @@ def joinGame():
     terminal.clear()
     terminal.printf(4, 3, "Enter Nickname:")
     name = terminal.read_str(4,4, "", 10)
+    client = Client(ip[1], int(port[1]), name)
+    while not client.isConnected:
+        time.sleep(0.01)
+    msgQ = Queue()
+    msgP = Process(target=getMsg, args=(client, msgQ,))
+    msgP.start()
+    mpGameLoop(client, msgQ)
+
+def mpGameLoop(client, msgQ):
+    if msgQ.qsize() > 0:
+        msg = msgQ.get()
+        print(msg)
+
+
+
+def getMsg(client, q):
+    while True:
+        if len(client.msgs) > 0:
+            for element in client.msgs:
+                q.put(element)
+        if client.isConnected == False:
+            break
+
+
+
 
 logging.info("Activated Main Menu")
 # We get choice from the Main Menu then we either exit the game or do a

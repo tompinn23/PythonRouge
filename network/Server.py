@@ -1,7 +1,7 @@
 import sys
 sys.path.append("../")
-from game import Map
-from game import Monster
+from game.Map import Map
+from game.Monster import Monster
 
 import pickle
 import logging
@@ -12,8 +12,8 @@ logging.basicConfig(filename='server.log',level=logging.INFO)
 
 from weakref import WeakKeyDictionary
 
-from PodSixNet.Server import Server
-from PodSixNet.Channel import Channel
+from network.PodSixNet.Server import Server
+from network.PodSixNet.Channel import Channel
 
 class ClientChannel(Channel):
     """
