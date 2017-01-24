@@ -32,7 +32,7 @@ class Server(asyncore.dispatcher):
 		self.channels.append(self.channelClass(conn, addr, self, self._map))
 		self.channels[-1].Send({"action": "connected"})
 		if hasattr(self, "Connected"):
-			self.Connected(self.channels[-1], addr)
+			self.Connected(self.channels[-1])
 	
 	def Pump(self):
 		[c.Pump() for c in self.channels]

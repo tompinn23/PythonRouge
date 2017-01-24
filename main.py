@@ -7,7 +7,8 @@ from network.Client import Client
 import logging
 import pickle
 import time
-from multiprocessing import Process , Queue
+from threading import Thread
+from queue import Queue
 # Setup Logging to file specifing date and time added to message
 logging.basicConfig(filename='coursework.log',
                     format='%(asctime)s %(message)s',
@@ -115,11 +116,14 @@ def joinGame():
     terminal.printf(4, 3, "Enter Nickname:")
     name = terminal.read_str(4,4, "", 10)
     client = Client(ip[1], int(port[1]), name)
-    while not client.isConnected:
+    while client.isConnected == False:
+        client.Loop()
         time.sleep(0.01)
+        print("not connected")
     msgQ = Queue()
-    msgP = Process(target=getMsg, args=(client, msgQ,))
+    msgP = Thread(target=getMsg, args=(client, msgQ,))
     msgP.start()
+    msgP.run()
     mpGameLoop(client, msgQ)
 
 def mpGameLoop(client, msgQ):
@@ -133,6 +137,7 @@ def getMsg(client, q):
     while True:
         if len(client.msgs) > 0:
             for element in client.msgs:
+                print(element)
                 q.put(element)
         if client.isConnected == False:
             break

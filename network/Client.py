@@ -16,9 +16,9 @@ class Client(ConnectionListener):
         connection.Send({"action": action, "message": message})
 
 
-    def Network_message(self, data):
+    def Network(self, data):
+        print(data)
         self.msgs.append(data)
-
         # built in stuff
 
     def Network_connected(self, data):

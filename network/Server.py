@@ -9,7 +9,7 @@ import time
 
 logging.basicConfig(filename='server.log',level=logging.INFO)
 
-
+_map = Map(70, 50)
 from weakref import WeakKeyDictionary
 
 from network.PodSixNet.Server import Server
@@ -38,6 +38,9 @@ class ClientChannel(Channel):
         self.nickname = data['nickname']
         self._server.SendPlayers()
 
+    def Network_connected(self,data):
+        print("connectedee")
+
 
 class GameServer(Server):
     channelClass = ClientChannel
@@ -55,6 +58,9 @@ class GameServer(Server):
         print("New Player" + str(player.addr))
         self.players[player] = True
         print("players", [p for p in self.players])
+        time.sleep(2)
+        player.Send({"action": "connected", "message":""})
+        player.Send({"action": "recv_map", "message": _map.game_map})
 
     def DelPlayer(self, player):
         print("Deleting Player" + str(player.addr))
@@ -64,6 +70,7 @@ class GameServer(Server):
         [p.Send({"action": action, "message": message}) for p in self.players]
 
     def Launch(self):
+        _map.generate_Dungeon(70, 50)
         while True:
             self.Pump()
             time.sleep(0.0001)
