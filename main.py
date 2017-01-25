@@ -4,11 +4,14 @@ from game.Player import Player
 from game.Map import Map
 from game import constants
 from network.Client import Client
+from network.Server import GameServer
 import logging
 import pickle
 import time
+import socket
 from threading import Thread
 from queue import Queue
+import asyncio
 # Setup Logging to file specifing date and time added to message
 logging.basicConfig(filename='coursework.log',
                     format='%(asctime)s %(message)s',
@@ -53,6 +56,8 @@ def handle_input():
         return 2
     # This is randomly chosen close code allowing the program to exit when the
     # windows is closed or the exit option is chosen.
+    if key == terminal.TK_E:
+        return "e"
     if key == terminal.TK_3:
         return 4533
     if key == terminal.TK_CLOSE:
@@ -66,7 +71,7 @@ def mainMenu():
         terminal.clear()
         terminal.printf(4, 2, "[color=(11,110,117)] Game")
         terminal.printf(4, 3, "1) Play Game")
-        terminal.printf(4, 4, "2) Join Game")
+        terminal.printf(4, 4, "2) Multiplayer")
         terminal.printf(4, 5, "3) Exit Game")
         terminal.refresh()
         # Then we wait for input.
@@ -105,17 +110,40 @@ def gameLoop(_map, player):
         if ex == 2:
             break
 
+def multiMenu():
+    terminal.clear()
+    terminal.printf(4, 2, "[color=(11,110,117)] Multiplayer")
+    terminal.printf(4, 3, "1) Host Game")
+    terminal.printf(4, 4, "2) Join Game")
+    terminal.refresh()
+    key = handle_input()
+    if key == 1:
+        hostGame()
+    if key == 2:
+        joinGame()
+    if key == "e":
+        exit()
+
+def hostGame():
+    ip = socket.gethostbyname(socket.gethostname())
+    s = GameServer(localaddr=(ip, 32078))
+    terminal.clear()
+    terminal.printf(4,3,"Your password is "+ip+":32078")
+    terminal.printf(4,4, "Player list")
+    terminal.refresh()
+    
+    
+
+
 def joinGame():
     terminal.clear()
-    terminal.printf(4, 3, "Enter IP Address:")
-    ip = terminal.read_str(4,4, "", 16)
-    terminal.clear()
-    terminal.printf(4, 3, "Enter Port:")
-    port = terminal.read_str(4,4, "", 6)
+    terminal.printf(4, 3, "Enter Password:")
+    conn = terminal.read_str(4,4, "", 22)
+    addr = conn[1].split(":")
     terminal.clear()
     terminal.printf(4, 3, "Enter Nickname:")
     name = terminal.read_str(4,4, "", 10)
-    client = Client(ip[1], int(port[1]), name)
+    client = Client(addr[0], int(addr[1]), name)
     while client.isConnected == False:
         client.Loop()
         time.sleep(0.01)
@@ -152,7 +180,7 @@ ch = mainMenu()
 if ch == 1:
     playGame()
 if ch == 2:
-    joinGame()
+    multiMenu()
 if ch == 3:
     pass
 
