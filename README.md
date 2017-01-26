@@ -1,10 +1,5 @@
-# Coursework 
+### PythonRouge ###
 
-This is the private repo for my coursework if you are here piss off.
-
-### What is this repository for? ###
-
-* This is a small rougelike made in python for coursework
-* v0.05
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
-
+# Introduction #
+* This is my python rougelike that i am currently developing it is not anywhere finished currently
+and is more like a basic tech demo right now.
