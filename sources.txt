@@ -6,3 +6,5 @@ new_fov http://www.roguebasin.com/index.php?title=Python_shadowcasting_implement
 pathfinding https://github.com/brean/python-pathfinding
 
 Network Library https://github.com/chr15m/PodSixNet/tree/python3
+
+dungeon generator = https://github.com/Mizipzor/roguelike-dungeon-generator
