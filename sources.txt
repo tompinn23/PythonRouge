@@ -4,3 +4,5 @@ python + tdl tutorial http://www.roguebasin.com/index.php?title=Roguelike_Tutori
 
 new_fov http://www.roguebasin.com/index.php?title=Python_shadowcasting_implementation
 pathfinding https://github.com/brean/python-pathfinding
+
+Network Library https://github.com/chr15m/PodSixNet/tree/python3
