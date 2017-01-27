@@ -46,7 +46,7 @@ class GameServer(Server):
     def __init__(self, *args, **kwargs):
         Server.__init__(self, *args, **kwargs)
         self.players = WeakKeyDictionary()
-        self._map = Map(70, 50)
+        self.gmap = Map(70, 50)
         print('Server launched')
         logging.info("Server Launched")
 
@@ -58,7 +58,7 @@ class GameServer(Server):
         self.players[player] = True
         print("players", [p for p in self.players])
         time.sleep(2)
-        player.Send({"action": "recv_map", "message": pickle.dumps(self._map.game_map)})
+        player.Send({"action": "recv_map", "message": pickle.dumps(self.gmap.game_map)})
 
     def DelPlayer(self, player):
         print("Deleting Player" + str(player.addr))
@@ -68,7 +68,7 @@ class GameServer(Server):
         [p.Send({"action": action, "message": message}) for p in self.players]
 
     def Launch(self):
-        self._map.generate_Dungeon(70, 50)
+        self.gmap.generate_Dungeon(70, 50)
         while True:
             self.Pump()
             time.sleep(0.0001)
