@@ -80,11 +80,11 @@ def mainMenu():
         if _exit == 4533:
             return None
         elif _exit == 1:
-            return 1
+            playGame()
         elif _exit == 2:
-            return 2
+            multiMenu()
         elif _exit == 3:
-            return 3
+            exit()
 
 
 def playGame():
@@ -122,7 +122,7 @@ def multiMenu():
     if key == 2:
         joinGame()
     if key == "e":
-        exit()
+        mainMenu()
 
 def hostGame():
     ip = socket.gethostbyname(socket.gethostname())
@@ -143,47 +143,24 @@ def joinGame():
     terminal.clear()
     terminal.printf(4, 3, "Enter Nickname:")
     name = terminal.read_str(4,4, "", 10)
-    client = Client(addr[0], int(addr[1]), name)
+    client = Client(str(addr[0]), int(addr[1]), name)
     while client.isConnected == False:
         client.Loop()
         time.sleep(0.01)
         print("not connected")
-    msgQ = Queue()
-    msgP = Thread(target=getMsg, args=(client, msgQ,))
-    msgP.start()
-    msgP.run()
     mpGameLoop(client, msgQ)
 
 def mpGameLoop(client, msgQ):
-    if msgQ.qsize() > 0:
-        msg = msgQ.get()
-        print(msg)
-
-
-
-def getMsg(client, q):
     while True:
-        if len(client.msgs) > 0:
-            for element in client.msgs:
-                print(element)
-                q.put(element)
-        if client.isConnected == False:
-            break
+        client.Loop()
+        if msgQ.qsize() > 0:
+            msg = msgQ.get()
+            print(msg)
 
 
+if __name__ == "__main__":
+    mainMenu()
 
-
-logging.info("Activated Main Menu")
-# We get choice from the Main Menu then we either exit the game or do a
-# specific function.
-ch = mainMenu()
-if ch == 1:
-    playGame()
-if ch == 2:
-    multiMenu()
-if ch == 3:
-    pass
-
-logging.info("----CLOSED PROGRAM----")
-# Cleanly close the terminal window.
-terminal.close()
+    logging.info("----CLOSED PROGRAM----")
+    # Cleanly close the terminal window.
+    terminal.close()

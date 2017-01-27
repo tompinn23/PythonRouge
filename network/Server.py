@@ -1,74 +1,56 @@
-import sys
-sys.path.append("../")
-from game.Map import Map
-from game.Monster import Monster
-
-import pickle
-import logging
-import time
-
-logging.basicConfig(filename='server.log',level=logging.INFO)
-
-from weakref import WeakKeyDictionary
-
-from network.PodSixNet.Server import Server
 from network.PodSixNet.Channel import Channel
+from network.PodSixNet.Server import Server
+from weakref import WeakKeyDictionary
+from game.Map import Map
+
+import time, pickle, logging
 
 class ClientChannel(Channel):
-    """
-    	This is the server representation of a single connected client.
-    """
+
     def __init__(self, *args, **kwargs):
-        self.nickname = "anonymous"
+        self.name = "anonymous"
         Channel.__init__(self, *args, **kwargs)
 
-    def Close(self):
-        self._server.DelPlayer(self)
-
-    ##################################
-    ### Network specific callbacks ###
-    ##################################
-
     def Network(self, data):
-        self.Send({"action": "message", "message": data["message"]})
+        print(data)
 
     def Network_nickname(self, data):
         self.nickname = data['nickname']
 
-    def Network_connected(self,data):
-        print("connectedee")
-
-
+    def Network_wantMap(self, data):
+        self._server.sendMap(self)
 
 class GameServer(Server):
     channelClass = ClientChannel
 
     def __init__(self, *args, **kwargs):
         Server.__init__(self, *args, **kwargs)
+        print("Launched")
         self.players = WeakKeyDictionary()
         self.gmap = Map(70, 50)
-        print('Server launched')
-        logging.info("Server Launched")
+        self.gmap.generate_Dungeon(70, 50)
+
 
     def Connected(self, channel):
+        print("Connection from:" + str(channel.addr))
         self.AddPlayer(channel)
 
-    def AddPlayer(self, player):
-        print("New Player" + str(player.addr))
-        self.players[player] = True
-        print("players", [p for p in self.players])
-        time.sleep(2)
-        player.Send({"action": "recv_map", "message": pickle.dumps(self.gmap.game_map)})
+    def AddPlayer(self, channel):
+        self.players[channel] = True
 
-    def DelPlayer(self, player):
-        print("Deleting Player" + str(player.addr))
-        del self.players[player]
+    def DelPlayer(self, channel):
+        del self.players[channel]
 
-    def SendToAll(self, action , message):
-        [p.Send({"action": action, "message": message}) for p in self.players]
+    def SendALL(self, data):
+        for p in self.players:
+            p.Send(data)
+
+    def sendMap(self, player):
+        player.Send({'action': 'gameMap', 'message': pickle.dumps(self.gmap.game_map)})
+        logging.info("(Server) Sent game map to " + player.nickname)
 
     def Launch(self):
-        self.gmap.generate_Dungeon(70, 50)
+        logging.info("(Server) Launched Server")
         while True:
             self.Pump()
             time.sleep(0.0001)
