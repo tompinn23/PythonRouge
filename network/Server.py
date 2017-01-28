@@ -11,6 +11,9 @@ class ClientChannel(Channel):
         self.name = "anonymous"
         Channel.__init__(self, *args, **kwargs)
 
+    def Close(self):
+        self._server.DelPlayer(self)
+
     def Network(self, data):
         print(data)
 
@@ -34,22 +37,26 @@ class GameServer(Server):
     def Connected(self, channel):
         print("Connection from:" + str(channel.addr))
         self.AddPlayer(channel)
+        channel.Send({'action': 'connected'})
 
     def AddPlayer(self, channel):
         self.players[channel] = True
 
     def DelPlayer(self, channel):
         del self.players[channel]
+        print("Deleting Player")
 
     def SendALL(self, data):
         for p in self.players:
             p.Send(data)
 
     def sendMap(self, player):
-        player.Send({'action': 'gameMap', 'message': pickle.dumps(self.gmap.game_map)})
+        print(self.gmap.mapTo())
+        player.Send({'action': 'gameMap', 'gameMap': self.gmap.mapTo()})
         logging.info("(Server) Sent game map to " + player.nickname)
 
     def Launch(self):
+        print(self.gmap.mapTo())
         logging.info("(Server) Launched Server")
         while True:
             self.Pump()

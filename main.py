@@ -94,10 +94,12 @@ def playGame():
     player = Player(playerx, playery, False, 100,'@', "player", "Tom")
     terminal.clear()
     _map.do_fov(player.x, player.y, constants.FOV_RADIUS)
-    gameLoop(_map, player)
-
-def gameLoop(_map, player):
     while True:
+        ex =gameTick(_map, player)
+        if ex:
+            break
+
+def gameTick(_map, player):
         _map.render_map()
         _map.draw_player_background(player.x, player.y)
         terminal.layer(1)
@@ -107,8 +109,10 @@ def gameLoop(_map, player):
         ex = handle_keys(player, _map.game_map)
         if ex == 1:
             _map.do_fov(player.x, player.y, constants.FOV_RADIUS)
+            return False
         if ex == 2:
-            break
+            return True
+        return False
 
 def multiMenu():
     terminal.clear()
@@ -143,19 +147,34 @@ def joinGame():
     terminal.clear()
     terminal.printf(4, 3, "Enter Nickname:")
     name = terminal.read_str(4,4, "", 10)
-    client = Client(str(addr[0]), int(addr[1]), name)
+    client = Client(addr[0], int(addr[1]), name[1])
     while client.isConnected == False:
         client.Loop()
-        time.sleep(0.01)
-        print("not connected")
-    mpGameLoop(client, msgQ)
+    client.Send({'action': 'wantMap', 'wantMap': 0})
+    mpGameLoop(client)
 
-def mpGameLoop(client, msgQ):
+def mpGameLoop(client):
+    _map = Map(70, 50)
+    player = Player(0, 0, False, 100, '@', "player", client.name)
+    mapReady = False
     while True:
         client.Loop()
-        if msgQ.qsize() > 0:
-            msg = msgQ.get()
-            print(msg)
+        if client.msgQ.qsize() > 0:
+            msg = client.msgQ.get()
+            if msg['action'] == 'gameMap':
+                _map.mapFrom(msg['gameMap'])
+                mapReady = True
+                playerx, playery = _map.findPlayerLoc()
+                player.x = playerx
+                player.y = playery
+                terminal.clear()
+                _map.do_fov(player.x, player.y, constants.FOV_RADIUS)
+        if mapReady:
+            ex = gameTick(_map, player)
+            if ex:
+                break
+
+
 
 
 if __name__ == "__main__":

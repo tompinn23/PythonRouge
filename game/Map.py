@@ -49,6 +49,33 @@ class Map():
             game_map = map_file
         self.game_map = game_map
 
+    def mapTo(self):
+        temp_map = [[TileType.EMPTY.value for y in range(self.map_height)]
+                        for x in range(self.map_width)]
+        for x in range(self.map_width):
+            for y in range(self.map_height):
+                if self.game_map[x][y].tile == TileType.FLOOR:
+                    temp_map[x][y] = TileType.FLOOR.value
+                if self.game_map[x][y].tile == TileType.WALL:
+                    temp_map[x][y] = TileType.WALL.value
+        return temp_map
+
+    def mapFrom(self, temp_map):
+        for x in range(self.map_width):
+            for y in range(self.map_height):
+                if temp_map[x][y] == TileType.FLOOR.value:
+                    self.game_map[x][y].tile = TileType.FLOOR
+                    self.game_map[x][y].blocked = False
+                    self.game_map[x][y].block_sight = False
+                if temp_map[x][y] == TileType.WALL.value:
+                    self.game_map[x][y].tile = TileType.WALL
+                    self.game_map[x][y].blocked = True
+                    self.game_map[x][y].block_sight = True
+                if temp_map[x][y] == TileType.EMPTY.value:
+                    self.game_map[x][y].tile = TileType.EMPTY
+                    self.game_map[x][y].blocked = False
+                    self.game_map[x][y].block_sight = False
+
     def generate_Dungeon(self, w ,h):
         tiles = game.newGenerator.generate(7,5,10)
         for y in range(self.map_height):
@@ -70,27 +97,24 @@ class Map():
 
 
     def findPlayerLoc(self):
-        playerLoc = False
-        while not playerLoc:
+        while True:
             for x in range(self.map_width):
                 for y in range(self.map_height):
-                    if self.game_map[x][y].blocked is False:
+                    if self.game_map[x][y].tile == TileType.FLOOR:
                         return x, y
-                        playerLoc = True
-                        break
 
     def render_map(self):
         for y in range(self.map_height):
             for x in range(self.map_width):
                 terminal.layer(0)
-                if self.game_map[x][y].blocked is True:
+                if self.game_map[x][y].tile == TileType.WALL:
                     if self.game_map[x][y].lit:
                         terminal.bkcolor(wall_lit)
                         terminal.put(x, y, ' ')
                     else:
                         terminal.bkcolor(wall)
                         terminal.put(x, y, ' ')
-                else:
+                elif self.game_map[x][y].tile == TileType.FLOOR:
                     if self.game_map[x][y].lit:
                         terminal.bkcolor(floor_lit)
                         terminal.put(x, y, ' ')

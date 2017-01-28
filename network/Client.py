@@ -5,10 +5,11 @@ from queue import Queue
 
 
 class Client(ConnectionListener):
-    def __int__(self, host, port, name):
+    def __init__(self, host, port, name):
         self.Connect((host, port))
         logging.info("(Client) Client Connected")
-        connection.Send({'action': 'nickname', 'message': name})
+        self.name = name
+        connection.Send({'action': 'nickname', 'nickname': str(name)})
         self.isConnected = False
         self.msgQ = Queue()
 
@@ -21,13 +22,16 @@ class Client(ConnectionListener):
     #                   #
     # NETWORK CALLBACKS #
     #                   #
+    def Network(self, data):
+        pass
 
-    def Network_Connected(self, data):
+    def Network_connected(self, data):
         logging.info("(Client) Connected")
         self.isConnected = True
 
     def Network_error(self, data):
         logging.error("(Client) Error: " + data['error'][1])
+        print("U r fucking connected")
         self.isConnected = False
         connection.Close()
 
@@ -36,4 +40,4 @@ class Client(ConnectionListener):
         self.isConnected = False
 
     def Network_gameMap(self, data):
-        self.msgQ.put(data['message'])
+        self.msgQ.put(data)
