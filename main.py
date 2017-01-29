@@ -135,7 +135,9 @@ def hostGame():
     terminal.printf(4,3,"Your password is "+ip+":32078")
     terminal.printf(4,4, "Player list")
     terminal.refresh()
-    
+    while True:
+        for i in range(len(s.players)):
+            terminal.printf(4, 4 + 1, str(s.players[i]))
     
 
 
