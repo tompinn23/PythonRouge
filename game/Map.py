@@ -186,7 +186,7 @@ class Map():
 
     def do_fov(self, x, y, radius):
         "Calculate lit squares from the given location and radius"
-        # do not use x and y for iterating overrides player x and y
+        # do not use x and y for iterating overrides player x and y duh
         for j in range(self.map_width):
             for i in range(self.map_height):
                 self.game_map[j][i].lit = False
