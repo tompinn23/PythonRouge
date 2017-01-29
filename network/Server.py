@@ -51,12 +51,10 @@ class GameServer(Server):
             p.Send(data)
 
     def sendMap(self, player):
-        print(self.gmap.mapTo())
         player.Send({'action': 'gameMap', 'gameMap': self.gmap.mapTo()})
         logging.info("(Server) Sent game map to " + player.nickname)
 
     def Launch(self):
-        print(self.gmap.mapTo())
         logging.info("(Server) Launched Server")
         while True:
             self.Pump()
