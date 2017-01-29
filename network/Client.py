@@ -1,5 +1,6 @@
 from network.PodSixNet.Connection import connection, ConnectionListener
 
+from game.Player import Player
 import logging
 from queue import Queue
 
@@ -11,6 +12,7 @@ class Client(ConnectionListener):
         self.name = name
         connection.Send({'action': 'nickname', 'nickname': str(name)})
         self.isConnected = False
+        self.player = Player(0, 0, False, 100, '@', self.name)
         self.msgQ = Queue()
 
     def Loop(self):
@@ -23,7 +25,7 @@ class Client(ConnectionListener):
     # NETWORK CALLBACKS #
     #                   #
     def Network(self, data):
-        pass
+        self.msgQ.put(data)
 
     def Network_connected(self, data):
         logging.info("(Client) Connected")
@@ -38,6 +40,3 @@ class Client(ConnectionListener):
     def Network_disconnected(self, data):
         logging.info("(Client) Disconnected")
         self.isConnected = False
-
-    def Network_gameMap(self, data):
-        self.msgQ.put(data)

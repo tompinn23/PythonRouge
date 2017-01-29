@@ -10,7 +10,6 @@ import pickle
 import time
 import socket
 from threading import Thread
-from queue import Queue
 import asyncio
 # Setup Logging to file specifing date and time added to message
 logging.basicConfig(filename='coursework.log',
@@ -91,7 +90,7 @@ def playGame():
     _map = Map(70, 50)
     _map.generate_Dungeon(70, 50)
     playerx, playery = _map.findPlayerLoc()
-    player = Player(playerx, playery, False, 100,'@', "player", "Tom")
+    player = Player(playerx, playery, False, 100,'@', "Tom")
     terminal.clear()
     _map.do_fov(player.x, player.y, constants.FOV_RADIUS)
     while True:
@@ -130,15 +129,24 @@ def multiMenu():
 
 def hostGame():
     ip = socket.gethostbyname(socket.gethostname())
-    s = GameServer(localaddr=(ip, 32078))
+    s = GameServer(localaddr=("0.0.0.0", 32078))
+    sProcess = Thread(target=launchServer, args=(s,))
+    sProcess.start()
     terminal.clear()
     terminal.printf(4,3,"Your password is "+ip+":32078")
     terminal.printf(4,4, "Player list")
     terminal.refresh()
     while True:
-        for i in range(len(s.players)):
-            terminal.printf(4, 4 + 1, str(s.players[i]))
-    
+        c = 0;
+        for p in s.players:
+            terminal.printf(4, 4 + c, p.name)
+            time.sleep(2)
+            c += 1;
+    sProcess.join()
+
+def launchServer(server):
+    server.Launch()
+
 
 
 def joinGame():
@@ -157,7 +165,7 @@ def joinGame():
 
 def mpGameLoop(client):
     _map = Map(70, 50)
-    player = Player(0, 0, False, 100, '@', "player", client.name)
+    player = Player(0, 0, False, 100, '@', client.name)
     mapReady = False
     while True:
         client.Loop()

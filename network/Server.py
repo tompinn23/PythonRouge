@@ -2,13 +2,15 @@ from network.PodSixNet.Channel import Channel
 from network.PodSixNet.Server import Server
 from weakref import WeakKeyDictionary
 from game.Map import Map
+from game.Player import Player
 
-import time, pickle, logging
+import time, logging
 
 class ClientChannel(Channel):
 
     def __init__(self, *args, **kwargs):
         self.name = "anonymous"
+        self.player = Player(0,0,False, 100, '@', "Player", self.name)
         Channel.__init__(self, *args, **kwargs)
 
     def Close(self):
@@ -18,7 +20,15 @@ class ClientChannel(Channel):
         print(data)
 
     def Network_nickname(self, data):
-        self.nickname = data['nickname']
+        self.name = data['nickname']
+        self.player.setName(self.name)
+        self._server.sendALL({'action': 'updatePlayers', 'updatePlayers': self.player.getPlayerData()})
+
+    def Network_posUpdate(self, data):
+       pos = data['posUpdate'].split(',')
+       self.player.x = pos[0]
+       self.player.y = pos[1]
+       self._server.sendALL({'action': 'posUpdate', 'posUpdate': str(self.name + ',' + self.player.x + ',' + self.player.y)})
 
     def Network_wantMap(self, data):
         self._server.sendMap(self)
@@ -52,7 +62,7 @@ class GameServer(Server):
 
     def sendMap(self, player):
         player.Send({'action': 'gameMap', 'gameMap': self.gmap.mapTo()})
-        logging.info("(Server) Sent game map to " + player.nickname)
+        logging.info("(Server) Sent game map to " + player.name)
 
     def Launch(self):
         logging.info("(Server) Launched Server")
