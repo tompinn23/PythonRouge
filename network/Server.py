@@ -10,7 +10,7 @@ class ClientChannel(Channel):
 
     def __init__(self, *args, **kwargs):
         self.name = "anonymous"
-        self.player = Player(0,0,False, 100, '@', "Player", self.name)
+        self.player = Player(0,0,False, 100, '@', self.name)
         Channel.__init__(self, *args, **kwargs)
 
     def Close(self):
@@ -22,13 +22,14 @@ class ClientChannel(Channel):
     def Network_nickname(self, data):
         self.name = data['nickname']
         self.player.setName(self.name)
-        self._server.sendALL({'action': 'updatePlayers', 'updatePlayers': self.player.getPlayerData()})
+        self._server.SendALL({'action': 'updatePlayers', 'updatePlayers': self.player.getPlayerData()})
 
     def Network_posUpdate(self, data):
-       pos = data['posUpdate'].split(',')
+       pos = data['posUpdate']
        self.player.x = pos[0]
        self.player.y = pos[1]
-       self._server.sendALL({'action': 'posUpdate', 'posUpdate': str(self.name + ',' + self.player.x + ',' + self.player.y)})
+       print(self.name)
+       self._server.SendALL({'action': 'posUpdate', 'posUpdate': [self.name ,self.player.x,self.player.y]})
 
     def Network_wantMap(self, data):
         self._server.sendMap(self)
@@ -58,6 +59,7 @@ class GameServer(Server):
 
     def SendALL(self, data):
         for p in self.players:
+            print(p.name)
             p.Send(data)
 
     def sendMap(self, player):

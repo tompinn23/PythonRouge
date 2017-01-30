@@ -2,6 +2,7 @@
 from bearlibterminal import terminal
 from game.Player import Player
 from game.Map import Map
+from game.Map import black
 from game import constants
 from network.Client import Client
 from network.Server import GameServer
@@ -95,23 +96,20 @@ def playGame():
     _map.do_fov(player.x, player.y, constants.FOV_RADIUS)
     while True:
         ex =gameTick(_map, player)
-        if ex:
+        if ex == 2:
+            terminal.bkcolor(black)
             break
 
 def gameTick(_map, player):
-        _map.render_map()
-        _map.draw_player_background(player.x, player.y)
-        terminal.layer(1)
-        player.draw()
-        terminal.refresh()
-        player.clear()
-        ex = handle_keys(player, _map.game_map)
-        if ex == 1:
-            _map.do_fov(player.x, player.y, constants.FOV_RADIUS)
-            return False
-        if ex == 2:
-            return True
-        return False
+    _map.render_map()
+    _map.draw_player_background(player.x, player.y)
+    ex = handle_keys(player, _map.game_map)
+    if ex == 1:
+        _map.do_fov(player.x, player.y, constants.FOV_RADIUS)
+        return 1
+    if ex == 2:
+        return 2
+    return 0
 
 def multiMenu():
     terminal.clear()
@@ -165,7 +163,7 @@ def joinGame():
 
 def mpGameLoop(client):
     _map = Map(70, 50)
-    player = Player(0, 0, False, 100, '@', client.name)
+    player = client.players[client.name]
     mapReady = False
     while True:
         client.Loop()
@@ -180,8 +178,20 @@ def mpGameLoop(client):
                 terminal.clear()
                 _map.do_fov(player.x, player.y, constants.FOV_RADIUS)
         if mapReady:
-            ex = gameTick(_map, player)
-            if ex:
+            _map.render_map()
+            terminal.layer(1)
+            for k, v in client.players.items():
+                v.draw()
+                _map.draw_player_background(v.x, v.y)
+            terminal.refresh()
+            for k, v in client.players.items():
+                v.clear()
+            ex = handle_keys(player, _map.game_map)
+            if ex == 1:
+                _map.do_fov(player.x, player.y, constants.FOV_RADIUS)
+                client.Send({'action': 'posUpdate', 'posUpdate': [player.x, player.y]})
+            if ex == 2:
+                terminal.bkcolor(black)
                 break
 
 

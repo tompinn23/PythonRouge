@@ -12,7 +12,8 @@ class Client(ConnectionListener):
         self.name = name
         connection.Send({'action': 'nickname', 'nickname': str(name)})
         self.isConnected = False
-        self.player = Player(0, 0, False, 100, '@', self.name)
+        self.players= {}
+        self.players[name] = Player(0, 0, False, 100, '@', name)
         self.msgQ = Queue()
 
     def Loop(self):
@@ -40,3 +41,12 @@ class Client(ConnectionListener):
     def Network_disconnected(self, data):
         logging.info("(Client) Disconnected")
         self.isConnected = False
+
+    def Network_posUpdate(self, data):
+        sData = data['posUpdate']
+        print(self.players.values())
+        if not sData[0] in self.players.keys():
+            self.players[sData[0]] = Player(sData[1], sData[2], False, 100, '@', sData[0])
+        else:
+            self.players[sData[0]].x = sData[1]
+            self.players[sData[0]].y = sData[2]
