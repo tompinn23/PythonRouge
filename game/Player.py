@@ -1,4 +1,4 @@
-
+from bearlibterminal import terminal
 from game.Entity import Entity
 
 class Player(Entity):
@@ -17,7 +17,6 @@ class Player(Entity):
 
     def getPlayerData(self):
         return (self.x, self.y, self.dead, self.health, self.char, self.name)
-
 
     def setPlayerData(self, **kwargs):
         for key in kwargs:

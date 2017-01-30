@@ -2,7 +2,7 @@
 from bearlibterminal import terminal
 from game.Player import Player
 from game.Map import Map
-from game.Map import black
+from game.Map import black, floor_lit
 from game import constants
 from network.Client import Client
 from network.Server import GameServer
@@ -11,7 +11,7 @@ import pickle
 import time
 import socket
 from threading import Thread
-import asyncio
+
 # Setup Logging to file specifing date and time added to message
 logging.basicConfig(filename='coursework.log',
                     format='%(asctime)s %(message)s',
@@ -19,6 +19,7 @@ logging.basicConfig(filename='coursework.log',
 # Load the terminal window and set config options
 terminal.open()
 terminal.set("window: size=70x50; font: terminal12x12.png, size=12x12;")
+terminal.set("0x40: at.png, align=center")
 terminal.refresh()
 # Load a player entity for testing
 
@@ -182,8 +183,8 @@ def mpGameLoop(client):
             terminal.layer(1)
             for k, v in client.players.items():
                 v.draw()
-                _map.draw_player_background(v.x, v.y)
             terminal.refresh()
+            terminal.layer(1)
             for k, v in client.players.items():
                 v.clear()
             ex = handle_keys(player, _map.game_map)
